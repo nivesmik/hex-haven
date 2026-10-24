@@ -1,33 +1,17 @@
-# Hex Haven — Playable Prototype
+# HEX HAVEN v0.2 — GitHub Pages prototype
 
-A zero-dependency hex tile placement puzzle prototype. Korean UI, responsive mobile layout, tile rotation, adjacency matching, scoring, level progression, undo, local saves, drag-to-pan and wheel zoom.
+Static HTML/CSS/JS. No build step, dependencies, or server required.
 
-## Run
+## v0.2 changes
+- Three orientations only (120° rotation).
+- Seeded deck: ~20% one-terrain, ~70% two-terrain, ~10% three-terrain tiles. Two-terrain edges use 2+4 / 4+2 adjacent groups.
+- Tap an available dotted hex to **select**, preview the tile on the board, rotate to inspect the placement and projected score, then press **여기에 놓기** to commit. Drag to pan.
+- Undo, stage reset, save and stage progression retained.
 
-Use a static server (ES modules do not work reliably over `file://`):
+## Deploy
+Upload `index.html`, `style.css`, `README.md`, and the **src** directory to the root of the GitHub repository. Enable GitHub Pages → Deploy from a branch → main → /(root).
 
-```bash
-python3 -m http.server 8000
-```
-
-Open http://localhost:8000.
-
-## GitHub Pages
-
-1. Create a new public GitHub repository.
-2. Upload **all files and the `src/` folder**, preserving their relative paths.
-3. In **Settings → Pages**, choose **Deploy from a branch**, branch **main**, folder **/(root)**, then save.
-4. Open the URL shown by GitHub Pages after deployment.
-
-## Architecture
-
-- `src/engine.js`: pure deterministic game rules, no browser or rendering dependencies. This can be ported to C# for Unity.
-- `src/main.js`: HTML Canvas renderer, input, and persistence.
-- `style.css`: layout and theme.
-- `index.html`: application shell.
-
-Tiles use axial coordinates (`q`, `r`), six ordered edge terrains, and integer rotations. Rendering is intentionally replaceable; no gameplay rules depend on sprites or art assets.
-
-## MVP notes
-
-Scores and target values are **prototype hypotheses**, not production-balanced. This build tests the core tile-placement loop, not village creation, sharing, or monetization. Local save is browser/device-specific.
+## Notes
+- Save schema is v2. An old v0.1 saved game resets when first opening v0.2 because the tile distribution and orientation rules changed.
+- The rules live in `src/engine.js`, independent of Canvas/DOM. Port the rules to C# if later moving to Unity; they are not directly executable in Unity.
+- No external assets; visuals are temporary.

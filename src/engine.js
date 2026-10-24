@@ -1,1 +1,14 @@
-
+// Pure game rules: no DOM/canvas dependencies. Portable to another renderer or Unity/C#.
+export const TERRAIN=['grass','forest','water','village'];
+export const DIRECTIONS=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+export const key=(q,r)=>`${q},${r}`;
+export const rotate=(edges,turns)=>Array.from({length:6},(_,i)=>edges[(i-turns%6+12)%6]);
+export const neighbors=(q,r)=>DIRECTIONS.map(([dq,dr],i)=>({q:q+dq,r:r+dr,dir:i}));
+export function available(board){const out=new Map();for(const tile of board.values())for(const n of neighbors(tile.q,tile.r)){const k=key(n.q,n.r);if(!board.has(k))out.set(k,{q:n.q,r:n.r});}return [...out.values()];}
+export function scorePlacement(board,q,r,edges){let matches=0;for(const n of neighbors(q,r)){const other=board.get(key(n.q,n.r));if(other&&edges[n.dir]===other.edges[(n.dir+3)%6])matches++;}const bonus=matches===6?50:matches>=3?20:matches>=2?10:0;return {matches,points:5+matches*10+bonus};}
+export function makeDeck(seed,count){let state=seed>>>0;const rand=()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return state/4294967296;};return Array.from({length:count},(_,i)=>{const a=Math.floor(rand()*4),b=Math.floor(rand()*4),c=Math.floor(rand()*4);const edges=[a,a,b,b,c,c].map(v=>TERRAIN[v]);return {id:`tile-${seed}-${i}`,edges};});}
+export function createGame(stage=1){const count=Math.min(14+stage*2,30);const board=new Map();board.set('0,0',{q:0,r:0,edges:['grass','grass','forest','forest','water','water'],id:'start'});return {stage,board,deck:makeDeck(1271+stage*7919,count),index:0,rotation:0,score:0,target:Math.round((count*12+stage*18)/10)*10,history:[],status:'playing'};}
+export function place(game,q,r){if(game.status!=='playing'||game.board.has(key(q,r))||!available(game.board).some(p=>p.q===q&&p.r===r))return null;const source=game.deck[game.index],edges=rotate(source.edges,game.rotation),result=scorePlacement(game.board,q,r,edges);game.history.push({q,r,points:result.points,rotation:game.rotation});game.board.set(key(q,r),{q,r,edges,id:source.id});game.score+=result.points;game.index++;game.rotation=0;if(game.score>=game.target)game.status='won';else if(game.index>=game.deck.length)game.status='lost';return result;}
+export function undo(game){const last=game.history.pop();if(!last)return false;game.board.delete(key(last.q,last.r));game.score-=last.points;game.index--;game.rotation=last.rotation;game.status='playing';return true;}
+export function serialize(game){return {version:1,stage:game.stage,board:[...game.board.values()],deck:game.deck,index:game.index,rotation:game.rotation,score:game.score,target:game.target,history:game.history,status:game.status};}
+export function deserialize(data){if(data?.version!==1||!Array.isArray(data.board)||!Array.isArray(data.deck))throw Error('Invalid save');return {...data,board:new Map(data.board.map(t=>[key(t.q,t.r),t]))};}

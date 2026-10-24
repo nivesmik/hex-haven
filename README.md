@@ -1,17 +1,11 @@
-# HEX HAVEN v0.2 — GitHub Pages prototype
+# HEX HAVEN v0.3
 
-Static HTML/CSS/JS. No build step, dependencies, or server required.
+Static HTML/CSS/JavaScript prototype. Upload `index.html`, `style.css`, and `src/engine.js`, `src/main.js` to the root of the GitHub Pages repository.
 
-## v0.2 changes
-- Three orientations only (120° rotation).
-- Seeded deck: ~20% one-terrain, ~70% two-terrain, ~10% three-terrain tiles. Two-terrain edges use 2+4 / 4+2 adjacent groups.
-- Tap an available dotted hex to **select**, preview the tile on the board, rotate to inspect the placement and projected score, then press **여기에 놓기** to commit. Drag to pan.
-- Undo, stage reset, save and stage progression retained.
+## Changes
+- Fixed pointy-top hex wedge rendering: the outline and terrain sector geometry now share the same vertices (-30° + 60° * i), with sector centers matching the engine's E/NE/NW/W/SW/SE edge indices.
+- Added drag from the on-board tile dock to a candidate cell, live ghost preview, and on-board rotation/confirm/undo/recenter controls.
+- Retained tap-to-select and board panning. Drag-drop selects the destination; confirm commits it, preventing accidental placement.
+- Preserved v0.2 save format. Game rules remain separate in `src/engine.js` for future Unity/C# port.
 
-## Deploy
-Upload `index.html`, `style.css`, `README.md`, and the **src** directory to the root of the GitHub repository. Enable GitHub Pages → Deploy from a branch → main → /(root).
-
-## Notes
-- Save schema is v2. An old v0.1 saved game resets when first opening v0.2 because the tile distribution and orientation rules changed.
-- The rules live in `src/engine.js`, independent of Canvas/DOM. Port the rules to C# if later moving to Unity; they are not directly executable in Unity.
-- No external assets; visuals are temporary.
+No build step or external dependencies.

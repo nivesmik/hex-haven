@@ -58,11 +58,65 @@ test('stage decks enforce 70:25:5 terrain composition and include 3:3 tiles',()=
  for(const count of [16,18,20,30]){
   const deck=makeDeck(12345,count);
   const sizes=deck.map(t=>new Set(t.edges).size);
-  assert.equal(sizes.filter(n=>n===1).length,Math.round(count*.25));
-  assert.equal(sizes.filter(n=>n===3).length,Math.round(count*.05));
-  assert.equal(sizes.filter(n=>n===2).length,count-Math.round(count*.25)-Math.round(count*.05));
+  const expected={16:[11,4,1],18:[13,4,1],20:[14,5,1],30:[21,8,1]}[count];
+  assert.deepEqual([2,1,3].map(type=>sizes.filter(n=>n===type).length),expected);
  }
  const two=makeDeck(12345,300).filter(t=>new Set(t.edges).size===2);
  assert.ok(two.some(t=>t.edges.filter(x=>x===t.edges[0]).length===3));
  assert.ok(two.some(t=>t.edges.filter(x=>x===t.edges[0]).length===4));
+});
+
+test('one rotation moves exactly one edge; six individual rotations restore all edges',()=>{
+ const original=['grass','forest','water','village','grass','water'];
+ assert.deepEqual(rotate(original,1),[original[5],...original.slice(0,5)]);
+ let current=original;
+ for(let i=0;i<6;i++)current=rotate(current,1);
+ assert.deepEqual(current,original);
+});
+test('composition quotas remain close for every stage size and terrain runs stay contiguous',()=>{
+ for(let stage=1;stage<=12;stage++){
+  const deck=createGame(stage).deck,count=deck.length;
+  for(const [type,ratio] of [[2,.7],[1,.25],[3,.05]]){
+   assert.ok(Math.abs(deck.filter(t=>new Set(t.edges).size===type).length-count*ratio)<1);
+  }
+  for(const t of deck){
+   const types=new Set(t.edges);
+   for(const terrain of types){
+    const starts=t.edges.filter((e,i)=>e===terrain&&t.edges[(i+5)%6]!==terrain).length;
+    assert.equal(starts,types.size===1?0:1);
+   }
+   if(types.size===2)assert.ok([2,3,4].includes(t.edges.filter(e=>e===t.edges[0]).length));
+   if(types.size===3)for(const terrain of types)assert.equal(t.edges.filter(e=>e===terrain).length,2);
+  }
+  assert.deepEqual(makeDeck(stage,count),makeDeck(stage,count));
+ }
+ assert.notDeepEqual(makeDeck(1,30),makeDeck(2,30));
+});
+test('special neighbors do not multiply normal stars; stage 1 and 2 need only stars',()=>{
+ const neighbor={...tile(0,0),special:true};
+ assert.equal(scorePlacement(new Map([['0,0',neighbor]]),1,0,edges('forest')).points,1);
+ for(const stage of [1,2]){
+  const game=createGame(stage);game.score=game.target;
+  assert.equal(objectives(game).complete,true);
+  assert.equal(game.deck.filter(t=>t.special).length,stage===1?0:Math.floor(game.deck.length/5));
+ }
+});
+test('five nearby forest tiles only connect through actual matching forest edges',()=>{
+ const board=new Map(Array.from({length:5},(_,q)=>[key(q,0),tile(q,0)]));
+ assert.equal(largestTerrainConnection(board),5);
+ board.get('2,0').edges[3]='grass';
+ assert.equal(largestTerrainConnection(board),3);
+});
+
+test('existing main v3 save retains deck, board, stars, target, history and can continue',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const data=JSON.parse(await readFile(new URL('./fixtures/main-v3-save.json',import.meta.url)));
+ const restored=deserialize(structuredClone(data));
+ assert.deepEqual(serialize(restored),data);
+ const target=restored.target,deck=structuredClone(restored.deck);
+ assert.equal(undo(restored),true);assert.equal(restored.rotation,1);
+ const result=place(restored,1,0);assert.ok(result);
+ assert.deepEqual(restored.deck,deck);assert.equal(restored.target,target);
+ assert.equal(restored.score,data.score);
+ assert.deepEqual(serialize(deserialize(JSON.parse(JSON.stringify(serialize(restored))))),serialize(restored));
 });

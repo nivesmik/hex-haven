@@ -1,0 +1,264 @@
+{
+  "version": 3,
+  "stage": 2,
+  "board": [
+    {
+      "q": 0,
+      "r": 0,
+      "edges": [
+        "grass",
+        "grass",
+        "grass",
+        "grass",
+        "forest",
+        "forest"
+      ],
+      "id": "start"
+    },
+    {
+      "q": 1,
+      "r": 0,
+      "edges": [
+        "village",
+        "forest",
+        "forest",
+        "forest",
+        "forest",
+        "village"
+      ],
+      "id": "tile-17109-0",
+      "special": false
+    }
+  ],
+  "deck": [
+    {
+      "id": "tile-17109-0",
+      "edges": [
+        "forest",
+        "forest",
+        "forest",
+        "forest",
+        "village",
+        "village"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-1",
+      "edges": [
+        "forest",
+        "forest",
+        "forest",
+        "forest",
+        "village",
+        "village"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-2",
+      "edges": [
+        "grass",
+        "grass",
+        "grass",
+        "grass",
+        "water",
+        "water"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-3",
+      "edges": [
+        "village",
+        "village",
+        "village",
+        "village",
+        "water",
+        "water"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-4",
+      "edges": [
+        "water",
+        "water",
+        "water",
+        "water",
+        "water",
+        "water"
+      ],
+      "special": true
+    },
+    {
+      "id": "tile-17109-5",
+      "edges": [
+        "water",
+        "water",
+        "grass",
+        "grass",
+        "village",
+        "village"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-6",
+      "edges": [
+        "water",
+        "water",
+        "water",
+        "water",
+        "village",
+        "village"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-7",
+      "edges": [
+        "forest",
+        "forest",
+        "forest",
+        "water",
+        "water",
+        "water"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-8",
+      "edges": [
+        "water",
+        "water",
+        "water",
+        "grass",
+        "grass",
+        "grass"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-9",
+      "edges": [
+        "village",
+        "village",
+        "village",
+        "village",
+        "grass",
+        "grass"
+      ],
+      "special": true
+    },
+    {
+      "id": "tile-17109-10",
+      "edges": [
+        "forest",
+        "forest",
+        "forest",
+        "forest",
+        "water",
+        "water"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-11",
+      "edges": [
+        "village",
+        "village",
+        "village",
+        "village",
+        "forest",
+        "forest"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-12",
+      "edges": [
+        "village",
+        "village",
+        "village",
+        "village",
+        "village",
+        "village"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-13",
+      "edges": [
+        "water",
+        "water",
+        "water",
+        "water",
+        "water",
+        "water"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-14",
+      "edges": [
+        "grass",
+        "grass",
+        "grass",
+        "grass",
+        "grass",
+        "grass"
+      ],
+      "special": true
+    },
+    {
+      "id": "tile-17109-15",
+      "edges": [
+        "village",
+        "village",
+        "village",
+        "forest",
+        "forest",
+        "forest"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-16",
+      "edges": [
+        "water",
+        "water",
+        "water",
+        "water",
+        "grass",
+        "grass"
+      ],
+      "special": false
+    },
+    {
+      "id": "tile-17109-17",
+      "edges": [
+        "grass",
+        "grass",
+        "grass",
+        "grass",
+        "grass",
+        "grass"
+      ],
+      "special": false
+    }
+  ],
+  "index": 1,
+  "rotation": 4,
+  "score": 0,
+  "target": 27,
+  "history": [
+    {
+      "q": 1,
+      "r": 0,
+      "points": 0,
+      "rotation": 1
+    }
+  ],
+  "status": "playing"
+}

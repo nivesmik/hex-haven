@@ -46,7 +46,12 @@ export function makeDeck(seed,count){
   const rand=()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return state/4294967296;};
   const pick=()=>TERRAIN[Math.floor(rand()*TERRAIN.length)];
   const distinct=used=>{let t=pick();while(used.includes(t))t=pick();return t;};
-  const nTriple=Math.round(count*.05),nSingle=Math.round(count*.25),nDouble=count-nTriple-nSingle;
+  // Largest remainder allocation minimizes rounding drift across all three quotas.
+  const quotas=[.70,.25,.05].map(ratio=>count*ratio),counts=quotas.map(Math.floor);
+  const order=[0,1,2].sort((a,b)=>(quotas[b]-counts[b])-(quotas[a]-counts[a])||a-b);
+  const remaining=count-counts.reduce((sum,n)=>sum+n,0);
+  for(let i=0;i<remaining;i++)counts[order[i]]++;
+  const [nDouble,nSingle,nTriple]=counts;
   const shapes=[...Array(nDouble).fill(2),...Array(nSingle).fill(1),...Array(nTriple).fill(3)];
   for(let i=shapes.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[shapes[i],shapes[j]]=[shapes[j],shapes[i]];}
   return shapes.map((shape,i)=>{

@@ -1,16 +1,24 @@
-# HEX HAVEN v0.4 — Touch-first prototype
+# HEX HAVEN v0.6
 
-Static HTML/CSS/ES module game. Deploy the **contents of this folder** to the root of your GitHub Pages repository.
+모바일 브라우저에서 동작하는 육각형 퍼즐 프로토타입입니다.
 
-## v0.4 changes
-- Pointy-top hex outline and six terrain wedges share one geometry function; edge index 0=E, 1=NE, 2=NW, 3=W, 4=SW, 5=SE. Corrects reversed visual terrain order from v0.3.
-- Pointer drag from tile dock to board using window pointer tracking, with lifted drag preview and on-board snap preview.
-- Full-viewport board, with floating HUD, action controls and tile dock overlaying the playfield.
-- Pan the board and return to center; keep undo, restart and 120° rotation.
-- Placement requires tapping ✓ after drag; this avoids accidental placements. Tap an empty cell to select it as an alternative.
+## 플레이
+- 빈 육각형 탭 → 현재 타일 미리보기 → 60도 회전 → 배치 확정
+- 보드 드래그: 지도 이동, ⌖: 원위치
+- 같은 지형끼리 맞닿은 변마다 ⭐ 1개
+- 특별 타일(★ 표시)은 일치 변마다 ⭐ 2개 (스테이지 2부터 등장)
+- 스테이지 3부터 별 목표 외에 **숲 5타일 연결** 목표도 달성해야 합니다.
+- 2속성 70%, 1속성 25%, 3속성 5%에 가까운 스테이지별 고정 수량을 섞어 제공
+- 2속성 타일은 4:2와 3:3을 6:4 비율로 생성
 
-## Notes
-- No libraries, no server, no build step. GitHub Pages compatible.
-- Core rules remain in `src/engine.js`, separate from browser rendering and input, to support eventual C# port to Unity.
-- Saved game version remains 2, as in v0.3. If you want to reset: use the restart button.
-- iPhone Safari touch behavior needs live-device testing.
+## 파일
+- `src/engine.js`: 순수 게임 규칙, 덱 생성, 별 계산, 연결 목표, 저장 직렬화
+- `src/main.js`: Canvas 렌더링 및 입력
+- `style.css`: 인터페이스
+- `index.html`: 실행 진입점
+
+## 배포
+GitHub 저장소 루트에 파일을 업로드하고 Settings → Pages → Deploy from a branch → main / (root).
+
+## 저장 호환성
+v0.6은 별/목표 시스템 도입으로 v0.5와 저장 데이터가 호환되지 않아 별도의 로컬 저장 키를 사용합니다.

@@ -1,21 +1,9 @@
+import {browserHarness} from '../test-support/browser.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 
 test('browser adapter renders, selects, rotates, places, undoes and cancels touch',async()=>{
- const elements=new Map(),listeners=new Map(),storage=new Map();
- const context=new Proxy({}, {get:(target,name)=>target[name]??(()=>{})});
- function element(id){
-  if(elements.has(id))return elements.get(id);
-  const handlers=new Map(),el={style:{},hidden:false,disabled:false,clientWidth:390,clientHeight:844,
-   getContext:()=>context,getBoundingClientRect:()=>({left:0,top:0,width:390,height:844}),
-   setPointerCapture(){},querySelector:()=>element(id+'-span'),
-   addEventListener:(name,fn)=>handlers.set(name,fn),handlers,
-   showModal(){this.open=true;},close(){this.open=false;}};
-  elements.set(id,el);return el;
- }
- globalThis.document={getElementById:element};
- globalThis.localStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)};
- globalThis.window={devicePixelRatio:3,addEventListener:(name,fn)=>listeners.set(name,fn)};
+ const {element,storage,listeners}=browserHarness([['hexhaven-view-v07','regular']]);
  await import('../src/main.js');
  const event=(x,y,id=1)=>({clientX:x,clientY:y,pointerId:id,isPrimary:true,button:0,preventDefault(){}});
  const board=element('board');
@@ -36,10 +24,8 @@ test('browser adapter renders, selects, rotates, places, undoes and cancels touc
  state=JSON.parse(storage.get('hexhaven-save-v3'));assert.equal(state.board.length,2);assert.equal(state.board[1].q,0);assert.equal(state.board[1].r,1);
  element('undo').onclick();
  state=JSON.parse(storage.get('hexhaven-save-v3'));assert.equal(state.board.length,1);
- element('tilegrab').handlers.get('pointerdown')(event(195,750));
- listeners.get('pointermove')(event(259,480));
- listeners.get('pointercancel')({...event(259,480),type:'pointercancel'});
- assert.equal(element('dragbadge').hidden,true);assert.equal(element('confirm').disabled,true);
+ assert.equal(element('tilegrab').handlers.has('pointerdown'),false);
+ assert.equal(element('confirm').disabled,true);
  // Background drag must not select a cell or place a tile.
  const before=storage.get('hexhaven-save-v3');
  board.handlers.get('pointerdown')(event(195,422));

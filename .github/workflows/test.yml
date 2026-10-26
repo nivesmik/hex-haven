@@ -1,4 +1,4 @@
-name: v0.6 rules and UI tests
+name: Rules, ecosystem and UI tests
 on: [push, pull_request]
 jobs:
   test:
@@ -9,4 +9,4 @@ jobs:
         with:
           node-version: 24
       - run: npm test
-      - run: for file in src/*.js test/*.js; do node --check "$file"; done
+      - run: for file in src/*.js test/*.js test-support/*.js scripts/*.js; do node --check "$file"; done

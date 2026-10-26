@@ -1,0 +1,1289 @@
+{
+  "method": "deterministic-beam-search",
+  "width": 6,
+  "seeds": [
+    1,
+    7,
+    42,
+    1271,
+    202607
+  ],
+  "results": [
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "comfort",
+      "seed": 1,
+      "deckSeed": 1,
+      "usedTiles": 9,
+      "finalStars": 20,
+      "targetStars": 18,
+      "water": 3,
+      "forest": 6,
+      "goals": {
+        "water": 3,
+        "forest": 2
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 5
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "comfort",
+      "seed": 7,
+      "deckSeed": 7,
+      "usedTiles": 9,
+      "finalStars": 20,
+      "targetStars": 18,
+      "water": 3,
+      "forest": 6,
+      "goals": {
+        "water": 3,
+        "forest": 2
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 4
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": -3,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": -4,
+          "r": 0,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "comfort",
+      "seed": 42,
+      "deckSeed": 42,
+      "usedTiles": 10,
+      "finalStars": 19,
+      "targetStars": 18,
+      "water": 4,
+      "forest": 3,
+      "goals": {
+        "water": 3,
+        "forest": 2
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 4
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 3
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "comfort",
+      "seed": 1271,
+      "deckSeed": 1271,
+      "usedTiles": 9,
+      "finalStars": 18,
+      "targetStars": 18,
+      "water": 3,
+      "forest": 3,
+      "goals": {
+        "water": 3,
+        "forest": 2
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 3
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 4
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "comfort",
+      "seed": 202607,
+      "deckSeed": 202607,
+      "usedTiles": 8,
+      "finalStars": 19,
+      "targetStars": 18,
+      "water": 3,
+      "forest": 4,
+      "goals": {
+        "water": 3,
+        "forest": 2
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 4
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "standard",
+      "seed": 1,
+      "deckSeed": 1,
+      "usedTiles": 12,
+      "finalStars": 27,
+      "targetStars": 27,
+      "water": 4,
+      "forest": 7,
+      "goals": {
+        "water": 4,
+        "forest": 3
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 5
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -3,
+          "r": 2,
+          "rotation": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "rotation": 2
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "standard",
+      "seed": 7,
+      "deckSeed": 7,
+      "usedTiles": 12,
+      "finalStars": 27,
+      "targetStars": 27,
+      "water": 5,
+      "forest": 6,
+      "goals": {
+        "water": 4,
+        "forest": 3
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 4
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "rotation": 1
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": -2,
+          "rotation": 5
+        },
+        {
+          "q": -3,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -3,
+          "r": 0,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "standard",
+      "seed": 42,
+      "deckSeed": 42,
+      "usedTiles": 13,
+      "finalStars": 27,
+      "targetStars": 27,
+      "water": 4,
+      "forest": 5,
+      "goals": {
+        "water": 4,
+        "forest": 3
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 4
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 3
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "standard",
+      "seed": 1271,
+      "deckSeed": 1271,
+      "usedTiles": 18,
+      "finalStars": 30,
+      "targetStars": 27,
+      "water": 3,
+      "forest": 6,
+      "goals": {
+        "water": 4,
+        "forest": 3
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Fail",
+      "verifiedSolution": false,
+      "verdict": "unknown-search-limit",
+      "path": [
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 3
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 3,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 1
+        },
+        {
+          "q": -3,
+          "r": 4,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 3,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "standard",
+      "seed": 202607,
+      "deckSeed": 202607,
+      "usedTiles": 10,
+      "finalStars": 27,
+      "targetStars": 27,
+      "water": 5,
+      "forest": 4,
+      "goals": {
+        "water": 4,
+        "forest": 3
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 4
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 4
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "challenge",
+      "seed": 1,
+      "deckSeed": 1,
+      "usedTiles": 15,
+      "finalStars": 34,
+      "targetStars": 33,
+      "water": 5,
+      "forest": 8,
+      "goals": {
+        "water": 5,
+        "forest": 4
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 5
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 5
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "rotation": 2
+        },
+        {
+          "q": -3,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 4
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "challenge",
+      "seed": 7,
+      "deckSeed": 7,
+      "usedTiles": 16,
+      "finalStars": 33,
+      "targetStars": 33,
+      "water": 6,
+      "forest": 8,
+      "goals": {
+        "water": 5,
+        "forest": 4
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 4
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "rotation": 1
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": -2,
+          "rotation": 5
+        },
+        {
+          "q": -3,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -3,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "rotation": 5
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "challenge",
+      "seed": 42,
+      "deckSeed": 42,
+      "usedTiles": 16,
+      "finalStars": 34,
+      "targetStars": 33,
+      "water": 5,
+      "forest": 8,
+      "goals": {
+        "water": 5,
+        "forest": 4
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 4
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 4
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 2
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 4
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "rotation": 4
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "challenge",
+      "seed": 1271,
+      "deckSeed": 1271,
+      "usedTiles": 18,
+      "finalStars": 35,
+      "targetStars": 33,
+      "water": 3,
+      "forest": 6,
+      "goals": {
+        "water": 5,
+        "forest": 4
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Fail",
+      "verifiedSolution": false,
+      "verdict": "unknown-search-limit",
+      "path": [
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 3
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 3,
+          "rotation": 0
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 1
+        },
+        {
+          "q": -3,
+          "r": 2,
+          "rotation": 2
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 5
+        },
+        {
+          "q": -1,
+          "r": 3,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "experiment": "living-river-v1",
+      "difficulty": "challenge",
+      "seed": 202607,
+      "deckSeed": 202607,
+      "usedTiles": 14,
+      "finalStars": 33,
+      "targetStars": 33,
+      "water": 5,
+      "forest": 6,
+      "goals": {
+        "water": 5,
+        "forest": 4
+      },
+      "restarts": 0,
+      "undos": 0,
+      "result": "Pass",
+      "verifiedSolution": true,
+      "verdict": "verified-pass",
+      "path": [
+        {
+          "q": 1,
+          "r": 0,
+          "rotation": 0
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "rotation": 2
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "rotation": 4
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "rotation": 0
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "rotation": 0
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "rotation": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "rotation": 2
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "rotation": 5
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "rotation": 3
+        },
+        {
+          "q": -3,
+          "r": 1,
+          "rotation": 3
+        },
+        {
+          "q": -3,
+          "r": 2,
+          "rotation": 0
+        }
+      ]
+    }
+  ],
+  "caveat": "Found paths are constructive witnesses. Search failure is not impossibility. This sample is not a balance or universal solvability guarantee."
+}

@@ -23,3 +23,21 @@ test('rendered terrain wedge midpoints align with all six axial neighbors',()=>{
  lines.length=0;hexPath(ctx,0,0,40);
  assert.ok(lines.some(([x,y])=>Math.abs(x)<1e-9&&Math.abs(y+40)<1e-9));
 });
+
+test('special tile marker and ecology decorations stay within tile centers',async()=>{
+ const {createExperiment}=await import('../src/engine.js');
+ const {renderBoard}=await import('../src/renderer.js');
+ const labels=[],arcs=[];
+ const ctx=new Proxy({fillText:(text,x,y)=>labels.push({text,x,y}),arc:(x,y,r)=>arcs.push({x,y,r})}, {get:(t,k)=>t[k]??(()=>{})});
+ const edge=Array(6).fill('grass');
+ drawTile(ctx,0,0,40,edge,false,true);
+ assert.equal(labels.filter(l=>l.text==='★').length,1);assert.equal(arcs[0].r,40*.19);
+ const g=createExperiment('comfort',7);g.board=new Map();
+ for(let q=0;q<3;q++)g.board.set(`${q},0`,{q,r:0,edges:Array(6).fill('water')});
+ for(let q=0;q<2;q++)g.board.set(`${q},1`,{q,r:1,edges:Array(6).fill('forest')});
+ labels.length=0;renderBoard(ctx,{clientWidth:390,clientHeight:844},g,null,{x:0,y:0,zoom:1},40);
+ assert.ok(labels.some(l=>l.text==='🦦'));assert.ok(labels.some(l=>l.text==='⟳'));
+ const centers=[...g.board.values()].map(t=>({x:Math.sqrt(3)*40*(t.q+t.r/2),y:60*t.r}));
+ for(const label of labels.filter(l=>['🦦','⟳','🌱'].includes(l.text)))
+  assert.ok(centers.some(c=>Math.hypot(c.x-label.x,c.y-label.y)<40*.4));
+});

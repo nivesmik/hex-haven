@@ -1,1 +1,1 @@
-{"name":"hex-haven","private":true,"type":"module","scripts":{"test":"node --test"}}
+{"name":"hex-haven","private":true,"type":"module","scripts":{"test":"node --test","simulate":"node scripts/simulate.js"}}

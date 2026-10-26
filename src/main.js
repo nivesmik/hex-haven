@@ -1,42 +1,99 @@
 import {renderBoard,renderPreviews,resizeCanvases} from './renderer.js';
-import {createGame,place,undo,available,rotate,serialize,deserialize,scorePlacement,objectives} from './engine.js';
+import {createGame,place,undo,available,rotate,serialize,deserialize,scorePlacement,objectives,createExperiment,restartGame,experimentResult,EXPERIMENT_MODES} from './engine.js';
 const $=id=>document.getElementById(id);
-const canvas=$('board'),ctx=canvas.getContext('2d'),preview=$('preview'),pctx=preview.getContext('2d'),dragCanvas=$('dragpreview'),dctx=dragCanvas.getContext('2d');
+const canvas=$('board'),ctx=canvas.getContext('2d'),preview=$('preview'),pctx=preview.getContext('2d');
 
-let game;try{game=deserialize(JSON.parse(localStorage.getItem('hexhaven-save-v3')))}catch{game=createGame(1)}
-let camera={x:0,y:0,zoom:1},size=43,selected=null,drag=null,pan=null;
+const NORMAL_KEY='hexhaven-save-v3',EXPERIMENT_KEY='hexhaven-experiment-v07',VIEW_KEY='hexhaven-view-v07';
+function readGame(key){try{return deserialize(JSON.parse(localStorage.getItem(key)));}catch{return null;}}
+let view;try{view=localStorage.getItem(VIEW_KEY)==='regular'?'regular':'experiment';}catch{view='experiment';}
+let game=view==='regular'?(readGame(NORMAL_KEY)??createGame(1)):(readGame(EXPERIMENT_KEY)??createExperiment());
+// Never put an ordinary save in the experiment slot or vice versa.
+if((view==='experiment')!==!!game.experiment)game=view==='regular'?createGame(1):createExperiment();
+let camera={x:0,y:0,zoom:1},size=43,selected=null,pan=null;
 const spots=()=>available(game.board),valid=p=>p&&spots().some(s=>s.q===p.q&&s.r===p.r);
-const save=()=>{try{localStorage.setItem('hexhaven-save-v3',JSON.stringify(serialize(game)))}catch{}};
+const save=()=>{try{localStorage.setItem(game.experiment?EXPERIMENT_KEY:NORMAL_KEY,JSON.stringify(serialize(game)));localStorage.setItem(VIEW_KEY,game.experiment?'experiment':'regular')}catch{}};
 // Single pointy-top hex geometry. The axial direction index and the terrain
 // edge index are the SAME: 0=E, 1=NE, 2=NW, 3=W, 4=SW, 5=SE.
 // The old implementation painted edge 1 at SE, reversing the actual neighbors.
 
 function screenToHex(clientX,clientY){const rect=canvas.getBoundingClientRect(),x=(clientX-rect.left-rect.width/2-camera.x)/camera.zoom,y=(clientY-rect.top-rect.height/2-camera.y)/camera.zoom;const q=(Math.sqrt(3)/3*x-y/3)/size,r=(2/3*y)/size;let cx=q,cz=r,cy=-cx-cz,rx=Math.round(cx),ry=Math.round(cy),rz=Math.round(cz);const dx=Math.abs(rx-cx),dy=Math.abs(ry-cy),dz=Math.abs(rz-cz);if(dx>dy&&dx>dz)rx=-ry-rz;else if(dy>dz)ry=-rx-rz;else rz=-rx-ry;return {q:rx,r:rz};}
-function draw(){renderBoard(ctx,canvas,game,selected,camera,size);renderPreviews(pctx,dctx,game);}
-function resize(){size=resizeCanvases(canvas,ctx,preview,pctx,dragCanvas,dctx,Math.min(window.devicePixelRatio||1,2));draw();}
-function update(){const goal=objectives(game);$('objective').textContent=goal.forestTarget?`숲 연결 ${goal.forest} / ${goal.forestTarget}`:'';$('tilegrab').querySelector('span').textContent=game.deck[game.index]?.special?'★ 특별 타일':'다음 타일'; $('stage').textContent=game.stage;$('score').textContent=game.score;$('target').textContent=game.target;$('remaining').textContent=game.deck.length-game.index;$('progress').style.width=Math.min(100,100*game.score/game.target)+'%';$('undo').disabled=!game.history.length;$('left').disabled=$('right').disabled=game.status!=='playing';$('confirm').disabled=game.status!=='playing'||!valid(selected);$('next').hidden=game.status!=='won';$('tilegrab').style.opacity=game.status==='playing'?1:.4;
-  if(valid(selected)&&game.status==='playing'){const s=scorePlacement(game.board,selected.q,selected.r,rotate(game.deck[game.index].edges,game.rotation),game.deck[game.index].special);$('selection').textContent=`예상 +${s.points}별 · 일치 ${s.matches}면`;}else $('selection').textContent='빈 칸을 터치해 미리보기';
-  $('message').textContent=game.status==='won'?'🎉 스테이지 클리어!':game.status==='lost'?'타일 소진 · 되돌리거나 재시작':'빈 칸 터치 → 60° 회전 → 배치 확정';save();draw();}
+function draw(){renderBoard(ctx,canvas,game,selected,camera,size);renderPreviews(pctx,game);}
+function resize(){size=resizeCanvases(canvas,ctx,preview,pctx,Math.min(window.devicePixelRatio||1,2));draw();}
+function update(){
+  const goal=objectives(game),experiment=game.experiment;
+  $('objective').textContent=experiment?`수달 발견 · 강 ${goal.ecosystem.water}/${experiment.goals.water} · 강가 숲 ${goal.ecosystem.forest}/${experiment.goals.forest}`:
+    goal.forestTarget?`숲 연결 ${goal.forest}/${goal.forestTarget}`:'별 목표 달성';
+  const ecoRatio=experiment?(Math.min(1,goal.ecosystem.water/experiment.goals.water)+Math.min(1,goal.ecosystem.forest/experiment.goals.forest))/2:
+    goal.forestTarget?Math.min(1,goal.forest/goal.forestTarget):1;
+  $('eco-progress').style.width=100*ecoRatio+'%';
+  $('eco-state').textContent=experiment?(goal.ecosystem.otter?'수달 발견 ✓':'생태계 목표'):'일반 진행 목표';
+  $('tilegrab').querySelector('span').textContent=game.deck[game.index]?.special?'★ 특별 · 일치당 2별':'다음 타일';
+  $('stage').textContent=experiment?'실험':game.stage;
+  $('score').textContent=game.score;$('target').textContent=game.target;
+  $('remaining').textContent=game.deck.length-game.index;
+  $('progress').style.width=Math.min(100,100*game.score/game.target)+'%';
+  $('undo').disabled=!game.history.length;
+  $('left').disabled=$('right').disabled=game.status!=='playing';
+  $('confirm').disabled=game.status!=='playing'||!valid(selected);
+  $('next').hidden=!!experiment||game.status!=='won';
+  $('tilegrab').style.opacity=game.status==='playing'?1:.4;
+  $('difficulty').disabled=$('seed').disabled=$('new-experiment').disabled=!experiment;
+  $('difficulty').value=experiment?.difficulty??'standard';
+  $('seed').value=experiment?.seed??202607;
+  $('settings-label').textContent=experiment?`${EXPERIMENT_MODES[experiment.difficulty].label} · 실험 설정`:'일반 v0.6 · 설정';
+  $('switch-view').textContent=experiment?'일반 v0.6 보기':'v0.7 실험으로';
+  $('test-toggle').hidden=!experiment;
+  if(!experiment)$('test-panel').hidden=true;
+  $('test-result').value=experiment?JSON.stringify(experimentResult(game),null,2):'';
+  if(valid(selected)&&game.status==='playing'){
+    const source=game.deck[game.index],result=scorePlacement(game.board,selected.q,selected.r,rotate(source.edges,game.rotation),source.special);
+    $('selection').textContent=`예상 +${result.points}별 · 일치 ${result.matches}면`;
+  }else $('selection').textContent='빈 칸 터치 → 회전 → 배치';
+  $('message').textContent=game.status==='won'?'Pass · 목표 달성':game.status==='lost'?'Fail · 타일 소진':'별과 생태계 목표를 함께 완성하세요';
+  if(!experiment&&game.status==='playing')$('message').textContent='빈 칸 터치 → 60° 회전 → 배치 확정';
+  save();draw();
+}
+let eventTimer=null,eventQueue=[];
+function clearEvents(){if(eventTimer!==null)window.clearTimeout(eventTimer);eventTimer=null;eventQueue=[];$('discovery').hidden=true;}
+function showEvents(events){
+  eventQueue.push(...events);
+  if(eventTimer!==null||!eventQueue.length)return;
+  const event=eventQueue.shift();$('discovery').textContent=event.text;$('discovery').hidden=false;
+  eventTimer=window.setTimeout(()=>{eventTimer=null;$('discovery').hidden=true;showEvents([]);},2600);
+}
+function resetView(next){clearEvents();game=next;camera={x:0,y:0,zoom:1};selected=null;pan=null;update();}
+function startExperiment(){
+  const raw=String($('seed').value).trim(),seed=Number(raw);
+  if(!/^\d+$/.test(raw)||!Number.isInteger(seed)||seed<0||seed>0xffffffff){$('message').textContent='시드는 0~4294967295 정수입니다.';return;}
+  if(!EXPERIMENT_MODES[$('difficulty').value])return;
+  try{resetView(createExperiment($('difficulty').value,seed));}
+  catch{$('message').textContent='이 설정으로 덱을 만들지 못했습니다. 다른 시드로 시작해 주세요.';}
+}
+$('difficulty').onchange=startExperiment;
+$('new-experiment').onclick=startExperiment;
+$('switch-view').onclick=()=>{
+  save();
+  const key=game.experiment?NORMAL_KEY:EXPERIMENT_KEY,next=readGame(key);
+  resetView(game.experiment?(next&&!next.experiment?next:createGame(1)):(next?.experiment?next:createExperiment()));
+};
+$('test-toggle').onclick=()=>{$('test-panel').hidden=!$('test-panel').hidden;};
+$('copy-result').onclick=async()=>{
+  const value=$('test-result').value;
+  try{await navigator.clipboard.writeText(value);$('copy-status').textContent='결과를 복사했습니다.';}
+  catch{$('test-result').focus();$('test-result').select();$('copy-status').textContent='결과를 선택했습니다. 복사해 주세요.';}
+};
 function rotateCurrent(d){if(game.status!=='playing')return;game.rotation=(game.rotation-d+6)%6;update();}
 $('left').onclick=()=>rotateCurrent(-1);$('right').onclick=()=>rotateCurrent(1);
-$('confirm').onclick=()=>{if(valid(selected)&&place(game,selected.q,selected.r)){selected=null;update();}};
-$('undo').onclick=()=>{if(undo(game)){selected=null;update();}};
-$('restart').onclick=()=>{game=createGame(game.stage);camera={x:0,y:0,zoom:1};selected=null;update();};
+$('confirm').onclick=()=>{if(!valid(selected))return;const result=place(game,selected.q,selected.r);if(result){selected=null;update();showEvents(result.events??[]);}};
+$('undo').onclick=()=>{if(undo(game)){clearEvents();selected=null;update();}};
+$('restart').onclick=()=>resetView(restartGame(game));
 $('center').onclick=()=>{camera={x:0,y:0,zoom:1};draw();};
-$('next').onclick=()=>{game=createGame(game.stage+1);camera={x:0,y:0,zoom:1};selected=null;update();};
+$('next').onclick=()=>{if(!game.experiment&&game.status==='won')resetView(createGame(game.stage+1));};
 $('help').onclick=()=>$('dialog').showModal();$('close').onclick=()=>$('dialog').close();
-// Touch drag is tracked on WINDOW, not the small tile element: it continues
-// reliably after the finger leaves the dock. touch-action:none prevents iOS
-// scrolling from canceling the gesture.
-const grab=$('tilegrab'),badge=$('dragbadge');
-function moveDragged(e){if(!drag||e.pointerId!==drag.id)return;drag.moved=true;badge.style.left=`${e.clientX}px`;badge.style.top=`${e.clientY-58}px`;const r=canvas.getBoundingClientRect();const inBoard=e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;const p=inBoard?screenToHex(e.clientX,e.clientY-58):null;selected=valid(p)?p:null;draw();$('confirm').disabled=!valid(selected);if(valid(selected)){const s=scorePlacement(game.board,selected.q,selected.r,rotate(game.deck[game.index].edges,game.rotation),game.deck[game.index].special);$('selection').textContent=`예상 +${s.points}별 · 일치 ${s.matches}면`;}else $('selection').textContent='점선 육각형 위로 옮겨 보세요';}
-function endDragged(e){if(!drag||e.pointerId!==drag.id)return;const wasValid=e.type!=='pointercancel'&&valid(selected);drag=null;badge.hidden=true;if(!wasValid)selected=null;update();}
-grab.addEventListener('pointerdown',e=>{if(game.status!=='playing'||drag||pan||!e.isPrimary||e.button!==0)return;e.preventDefault();grab.setPointerCapture(e.pointerId);drag={id:e.pointerId,moved:false};badge.hidden=false;badge.style.left=`${e.clientX}px`;badge.style.top=`${e.clientY-58}px`;draw();});
-window.addEventListener('pointermove',moveDragged,{passive:false});window.addEventListener('pointerup',endDragged);window.addEventListener('pointercancel',endDragged);grab.addEventListener('lostpointercapture',e=>{if(drag&&e.pointerId===drag.id)endDragged({pointerId:e.pointerId,type:'pointercancel'});});
 // Tap an empty cell to preview. Dragging the background pans the board.
-canvas.addEventListener('pointerdown',e=>{if(drag||pan||!e.isPrimary||e.button!==0)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);pan={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};});
+canvas.addEventListener('pointerdown',e=>{if(pan||!e.isPrimary||e.button!==0)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);pan={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};});
 canvas.addEventListener('pointermove',e=>{if(!pan||pan.id!==e.pointerId)return;const dx=e.clientX-pan.lastX,dy=e.clientY-pan.lastY;if(Math.hypot(e.clientX-pan.x,e.clientY-pan.y)>8)pan.moved=true;if(pan.moved){camera.x+=dx;camera.y+=dy;draw();}pan.lastX=e.clientX;pan.lastY=e.clientY;});
 canvas.addEventListener('pointerup',e=>{if(pan&&pan.id===e.pointerId&&!pan.moved&&Math.hypot(e.clientX-pan.x,e.clientY-pan.y)<=8&&game.status==='playing'){const p=screenToHex(e.clientX,e.clientY);if(valid(p)){selected=p;update();}}if(pan?.id===e.pointerId)pan=null;});canvas.addEventListener('pointercancel',e=>{if(pan?.id===e.pointerId)pan=null;});canvas.addEventListener('lostpointercapture',e=>{if(pan?.id===e.pointerId)pan=null;});
 canvas.addEventListener('wheel',e=>{e.preventDefault();camera.zoom=Math.max(.55,Math.min(2,camera.zoom*(e.deltaY<0?1.1:.9)));draw();},{passive:false});
-window.addEventListener('keydown',e=>{if(e.key==='q'||e.key==='ArrowLeft')rotateCurrent(-1);if(e.key==='e'||e.key==='ArrowRight')rotateCurrent(1);if(e.key==='Escape'){selected=null;update();}});
+window.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;if(e.key==='q'||e.key==='ArrowLeft')rotateCurrent(-1);if(e.key==='e'||e.key==='ArrowRight')rotateCurrent(1);if(e.key==='Escape'){selected=null;update();}});
 window.addEventListener('resize',resize);resize();update();

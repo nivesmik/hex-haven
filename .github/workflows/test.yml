@@ -9,4 +9,15 @@ jobs:
         with:
           node-version: 24
       - run: npm test
-      - run: for file in src/*.js test/*.js test-support/*.js scripts/*.js; do node --check "$file"; done
+      - run: for file in src/*.js src/visuals/*.js test/*.js test-support/*.js scripts/*.js; do node --check "$file"; done
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r scripts/requirements-browser.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python scripts/test-browser-v08.py

@@ -1,3 +1,21 @@
+# HEX HAVEN v0.8 · Low-poly 3D
+
+PR #3의 Living River 엔진을 그대로 사용하는 그래픽 프로토타입입니다.
+`python3 -m http.server 8000` 실행 후 http://localhost:8000/ 에서 플레이합니다.
+Three.js가 포함되어 별도 빌드·런타임 CDN은 필요 없습니다.
+
+- 탭: 미리보기, 좌우 버튼: 60도 회전, 배치: 확정
+- 드래그: 360도 카메라 회전, 휠/핀치/＋－: 확대, 두 손가락/Shift/오른쪽 드래그: 이동
+- 기본 모드·시드 202607. 별 목표와 수달 목표 모두 달성 시 Pass.
+- v0.8 전용 저장을 사용하며 설정에서 v0.7 실험 저장을 복사할 수 있습니다. 원본은 변경하지 않습니다.
+- WebGL 미지원 시 index-2d.html에서 v0.8 저장을 이어 플레이할 수 있습니다.
+- `npm test`: 기존 29 + 새 6 = 35개 테스트. 브라우저 검증: scripts/test-browser-v08.py.
+
+[구현·검증·알려진 문제](docs/V08_VISUAL_PROTOTYPE.md) · [미승인 지형 보너스 제안](docs/TERRAIN_BONUS_PROPOSAL.md)
+실제 iPhone Safari 테스트는 미완료입니다. 그림자·복잡한 강 블렌딩·동물 AI는 이번 구현에 포함하지 않습니다.
+
+---
+
 # HEX HAVEN v0.7 실험
 
 살아나는 강: 실제 물 변으로 강을 연결하고 강가 숲을 이어 수달을 찾아보는 퍼즐 실험입니다.

@@ -40,3 +40,7 @@ dialog{max-height:80dvh;overflow:auto}button:focus-visible,input:focus-visible,s
 .experiment-settings summary{cursor:pointer;min-height:44px;padding:12px 4px;color:#365f47}
 .experiment-settings[open]{background:#f4fff3f5;border-radius:12px;padding:0 8px 6px}
 @media(max-height:600px){.experiment-actions{position:static;flex-direction:row}.experiment-settings{max-width:360px}}
+/* 3D observation controls and long strategic forecasts. */
+#selection{max-width:min(680px,calc(100% - 80px));white-space:normal;line-height:1.45;background:#f6faeee8;border-radius:9px;padding:5px;bottom:calc(env(safe-area-inset-bottom,0px) + 142px)}
+.experiment-actions{flex-wrap:wrap}.experiment-actions a{color:#356448;font-size:12px;padding:10px}
+#board{outline:none}.goal-card{backdrop-filter:blur(3px)}

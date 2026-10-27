@@ -1,0 +1,44 @@
+[
+  {
+    "browser": "Chromium SwiftShader",
+    "viewport": "1280x800",
+    "touch": false,
+    "pageErrors": [],
+    "wonScene": {
+      "drawCalls": 136,
+      "triangles": 1601,
+      "geometries": 17,
+      "textures": 0,
+      "pixelRatio": 1
+    },
+    "medianRafMs": 16.7
+  },
+  {
+    "browser": "Chromium SwiftShader",
+    "viewport": "390x844",
+    "touch": true,
+    "pageErrors": [],
+    "wonScene": {
+      "drawCalls": 136,
+      "triangles": 1601,
+      "geometries": 17,
+      "textures": 0,
+      "pixelRatio": 1.5
+    },
+    "medianRafMs": 16.7
+  },
+  {
+    "browser": "Chromium SwiftShader",
+    "viewport": "320x568",
+    "touch": true,
+    "pageErrors": [],
+    "wonScene": {
+      "drawCalls": 136,
+      "triangles": 1601,
+      "geometries": 17,
+      "textures": 0,
+      "pixelRatio": 1.5
+    },
+    "medianRafMs": 16.7
+  }
+]

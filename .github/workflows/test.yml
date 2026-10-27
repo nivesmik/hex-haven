@@ -21,3 +21,9 @@ jobs:
       - run: pip install -r scripts/requirements-browser.txt
       - run: python -m playwright install --with-deps chromium
       - run: python scripts/test-browser-v08.py
+      - run: python scripts/test-v08-pan-otter.py --output /tmp/v08-after --assert-fixed
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v08-pan-otter-screenshots
+          path: /tmp/v08-after/
+      - run: python scripts/test-mobile-v08.py

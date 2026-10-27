@@ -22,7 +22,7 @@ A WebGL initialization failure offers a visible 2D fallback link. This is a fall
 - Forecasts use a copied board and the existing engine, including projected stars, without firing discoveries, modifying history or saving.
 - Existing water/forest/otter conditions, difficulty/seed settings, special stars, Pass/Fail, undo, restart and result copying are retained.
 - Existing engine progress selects fish, growing riverside tree clusters and one low-poly otter. Its appearance has no extra tile-shape condition.
-- Otter body/head/long tail/flippers prioritize silhouette; gentle floating/turning stops under reduced motion and when hidden.
+- The otter sits on a shoreline stone, with grounded feet and a fixed root; only the head/tail turn gently. Reduced motion restores the neutral pose.
 - Gold 3D markers and the dock label distinguish special tiles; no replacement reward system is implemented.
 - Tiles/frontier are updated by differences; preview resources are disposed; shared scene resources are disposed on exit.
 - Pixel ratio is capped at 1.5; shadows and texture rendering are omitted. Idle scenes without moving wildlife render only when changed.
@@ -44,7 +44,7 @@ Default is standard difficulty, seed 202607. Existing v0.8 saves resume rather t
   difficulty changes, a v0.7 winning path rendered with otter, read-only v0.7 save copying, and unavailable-WebGL fallback.
 - Tests do not deploy to production or alter original main / PR #3 branches.
 
-## Measured scene (Chromium SwiftShader, not iPhone hardware)
+## Original prototype baseline measurements (1ee621d, not iPhone hardware)
 
 | Viewport | Touch emulation | Draw calls | Triangles | Geometries | Median RAF interval |
 |---|---|---:|---:|---:|---:|
@@ -65,3 +65,6 @@ The desktop check also exercises WebGL context loss/restoration and persisted pa
 - On hardware Safari, check multi-touch cancellation, safe areas/landscape HUD, thermal behavior, WebGL context recovery, BFCache,
   reduced motion, text readability, camera occlusion and the ability to identify the otter silhouette.
 - v0.7 balance limits remain: standard/challenge seed 1271 has no verified clear path in the existing bounded search.
+
+## Pan and seated-otter patch
+See V08_PAN_OTTER.md and V08_PAN_OTTER_RESULTS.json for causes, before/after screenshots and real gesture results.

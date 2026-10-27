@@ -4,7 +4,8 @@ import {placementPreview} from './placement-preview.js';
 import {axialToWorld,edgeVertices,edgePoint,TILE_TOP} from './visuals/hex-layout.js';
 import {NatureKit} from './visuals/nature.js';
 import {tileGroup,disposeGhost,COLORS} from './visuals/hex-terrain.js';
-import {createOtter} from './visuals/otter.js';
+import {createOtter,animateOtter} from './visuals/otter.js';
+import {otterAnchor} from './visuals/otter-placement.js';
 export class Board3D{
  constructor(canvas){
   this.canvas=canvas;this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'});
@@ -41,9 +42,10 @@ export class Board3D{
    const mark=this.kit.mesh(group,this.kit.geometry('spot',()=>new THREE.CircleGeometry(.09,8)),0x9db29b,0,TILE_TOP,0);mark.rotation.x=-Math.PI/2;
    group.position.set(pos.x,0,pos.z);this.scene.add(group);this.spots.set(id,group);
   }
+  for(const [id,group] of this.spots)group.visible=!cell||id!==key(cell.q,cell.r);
   this.clearPreview();const forecast=placementPreview(game,cell);
   if(forecast){
-   const p=axialToWorld(cell.q,cell.r);this.preview=tileGroup(forecast,this.kit,{ghost:true});this.preview.position.set(p.x,0,p.z);this.scene.add(this.preview);
+   const p=axialToWorld(cell.q,cell.r);this.preview=tileGroup({...forecast,...cell},this.kit,{ghost:true});this.preview.position.set(p.x,0,p.z);this.scene.add(this.preview);
    for(const connection of forecast.connections){
     const [a,b]=edgeVertices(connection.dir),geometry=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(p.x+a.x,TILE_TOP+.025,p.z+a.z),new THREE.Vector3(p.x+b.x,TILE_TOP+.025,p.z+b.z)]);
     const material=new THREE.LineBasicMaterial({color:COLORS[connection.terrain],transparent:true,opacity:connection.matches?1:.35});
@@ -60,7 +62,7 @@ export class Board3D{
    this.ecology.clear();this.otter=null;this.ecoSignature=signature;
    if(eco?.river){
     const tile=game.board.get(eco.waterTiles[0]),p=axialToWorld(tile.q,tile.r);
-    if(eco.otter){const dir=tile.edges.indexOf('water'),anchor=edgePoint(dir,.35);this.otter=createOtter(this.kit);this.otter.userData.baseAngle=dir*Math.PI/3;this.otter.rotation.y=this.otter.userData.baseAngle;this.otter.position.set(p.x+anchor.x,TILE_TOP+.12,p.z+anchor.z);this.ecology.add(this.otter);}
+    if(eco.otter){const anchor=otterAnchor(game.board,eco);this.otter=createOtter(this.kit);this.otter.rotation.y=anchor.angle;this.otter.position.set(anchor.x,TILE_TOP,anchor.z);this.ecology.add(this.otter);}
     else{
      this.kit.mesh(this.ecology,this.kit.geometry('fish',()=>new THREE.OctahedronGeometry(.13)),0xf1ce88,p.x,TILE_TOP+.03,p.z,1.4,.35,.6);
     }
@@ -74,15 +76,19 @@ export class Board3D{
  }
  invalidate(){
   if(this.lost||document.hidden)return;
+  if(this.otter&&this.motion.matches)animateOtter(this.otter,0,true);
   this.renderer.render(this.scene,this.camera);
   if(this.otter&&!this.motion.matches&&this.frame==null)this.frame=requestAnimationFrame(t=>this.animate(t));
  }
  animate(t){
   this.frame=null;
-  if(this.lost||document.hidden||!this.otter||this.motion.matches)return;
-  this.otter.rotation.y=this.otter.userData.baseAngle+Math.sin(t*.0004)*.16;this.otter.position.y=TILE_TOP+.12+Math.sin(t*.0012)*.025;
+  if(this.lost||document.hidden||!this.otter)return;
+  if(this.motion.matches){this.invalidate();return;}
+  animateOtter(this.otter,t);
   this.invalidate();
  }
+ projectWorld(x,y,z){const p=new THREE.Vector3(x,y,z).project(this.camera),r=this.canvas.getBoundingClientRect();return {x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};}
+ otterPose(){return this.otter?{rootY:this.otter.position.y,headYaw:this.otter.userData.headPivot.rotation.y,tailYaw:this.otter.userData.tailPivot.rotation.y}:null;}
  stats(){return {drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,pixelRatio:this.renderer.getPixelRatio()};}
  dispose(){
   cancelAnimationFrame(this.frame);this.clearPreview();this.kit.dispose();this.renderer.dispose();

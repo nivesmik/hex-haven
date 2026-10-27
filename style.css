@@ -44,3 +44,8 @@ dialog{max-height:80dvh;overflow:auto}button:focus-visible,input:focus-visible,s
 #selection{max-width:min(680px,calc(100% - 80px));white-space:normal;line-height:1.45;background:#f6faeee8;border-radius:9px;padding:5px;bottom:calc(env(safe-area-inset-bottom,0px) + 142px)}
 .experiment-actions{flex-wrap:wrap}.experiment-actions a{color:#356448;font-size:12px;padding:10px}
 #board{outline:none}.goal-card{backdrop-filter:blur(3px)}
+
+#placement-actions{position:fixed;z-index:8;display:flex;gap:20px;width:180px;padding:4px;border-radius:13px;background:#fffffff0;box-shadow:0 3px 14px #23452b22}
+#placement-actions[hidden]{display:none}#placement-actions button{min-width:76px;min-height:46px;border-radius:10px;color:#315f48}#floating-confirm{background:#277d58;color:white!important}
+.discovery{display:flex;align-items:center;gap:10px;top:calc(env(safe-area-inset-top,0px) + 150px);bottom:auto;right:12px;pointer-events:none}.discovery[hidden]{display:none}#discovery-close{pointer-events:auto;min-width:44px;min-height:44px;border-radius:10px;background:#edf3e9;color:#315f48}
+@media(pointer:coarse){.dock .round,.dock #confirm{display:none}.dock{pointer-events:none;padding:4px 10px}#tilegrab{width:98px}.scorehint{bottom:calc(env(safe-area-inset-bottom,0px) + 104px)}.toast{bottom:calc(env(safe-area-inset-bottom,0px) + 86px)}}

@@ -1,3 +1,4 @@
+import {animalDiscoveryRecords} from './animal-discoveries.js';
 import {renderPreviews} from './renderer.js';
 import {Board3D} from './renderer3d.js';
 import {CameraControls} from './camera-controls.js';
@@ -12,16 +13,19 @@ let view;try{view=localStorage.getItem(VIEW_KEY)==='regular'?'regular':'experime
 let game=view==='regular'?(readGame(NORMAL_KEY)??createGame(1)):(readGame(EXPERIMENT_KEY)??createExperiment());
 // Never put an ordinary save in the experiment slot or vice versa.
 if((view==='experiment')!==!!game.experiment)game=view==='regular'?createGame(1):createExperiment();
-let selected=null;
+let selected=null,draftRotation=game.rotation;
+const displayGame=()=>({...game,rotation:selected?draftRotation:game.rotation});
+function selectTile(cell){if(valid(cell)&&game.status==='playing'){if(!selected)draftRotation=game.rotation;selected=cell;update();}}
+function cancelSelection(){selected=null;draftRotation=game.rotation;update();}
 const board3d=new Board3D(canvas);
-const controls=new CameraControls(canvas,board3d.camera,()=>board3d.invalidate(),cell=>{if(valid(cell)&&game.status==='playing'){selected=cell;update();}});
+const controls=new CameraControls(canvas,board3d.camera,()=>{board3d.invalidate();if(selected)positionActions();},selectTile,{canRotate:cell=>valid(cell)&&game.status==='playing',start:selectTile,rotate:rotateCurrent,end:()=>update(),cancel:cancelSelection});
 canvas.addEventListener('hex-webgl-lost',()=>{$('message').textContent='3D 화면 복구 중입니다. 계속되지 않으면 2D 보기를 선택해 주세요.';});
 window.addEventListener('pagehide',event=>{if(!event.persisted){controls.dispose();board3d.dispose();}});
 window.addEventListener('pageshow',event=>{if(event.persisted)resize();});
 canvas.addEventListener('hex-webgl-restored',()=>update());
 const spots=()=>available(game.board),valid=p=>p&&spots().some(s=>s.q===p.q&&s.r===p.r);
 const save=()=>{try{localStorage.setItem(game.experiment?EXPERIMENT_KEY:NORMAL_KEY,JSON.stringify(serialize(game)));localStorage.setItem(VIEW_KEY,game.experiment?'experiment':'regular')}catch{}};
-function draw(){board3d.setGame(game,selected);renderPreviews(pctx,game);}
+function draw(){board3d.setGame(displayGame(),selected);renderPreviews(pctx,displayGame());positionActions();}
 function resize(){preview.width=100;preview.height=100;board3d.resize();draw();}
 function update(){
   const goal=objectives(game),experiment=game.experiment;
@@ -48,10 +52,10 @@ function update(){
   $('switch-view').textContent=experiment?'일반 진행 보기':'강 실험으로';
   $('test-toggle').hidden=!experiment;
   if(!experiment)$('test-panel').hidden=true;
-  $('test-result').value=experiment?JSON.stringify(experimentResult(game),null,2):'';
+  $('test-result').value=experiment?JSON.stringify({...experimentResult(game),discoveries:animalDiscoveryRecords(game)},null,2):'';
   if(valid(selected)&&game.status==='playing'){
-    const source=game.deck[game.index],result=scorePlacement(game.board,selected.q,selected.r,rotate(source.edges,game.rotation),source.special);
-    const forecast=placementPreview(game,selected),before=forecast.before.ecosystem,after=forecast.after.ecosystem;
+    const source=game.deck[game.index],result=scorePlacement(game.board,selected.q,selected.r,rotate(source.edges,draftRotation),source.special);
+    const forecast=placementPreview(displayGame(),selected),before=forecast.before.ecosystem,after=forecast.after.ecosystem;
     const eco=after?` · 강 ${before.water}→${after.water}/${game.experiment.goals.water} · 숲 ${before.forest}→${after.forest}/${game.experiment.goals.forest}${after.otter?' · 수달 조건 충족':after.water===game.experiment.goals.water-1||after.forest===game.experiment.goals.forest-1?' · 목표에 가까워요':''}`:'';
     $('selection').textContent=`예상 +${result.points}별 · 일치 ${result.matches}면${eco}`;
   }else $('selection').textContent='빈 칸 터치 → 회전 → 배치';
@@ -59,15 +63,24 @@ function update(){
   if(!experiment&&game.status==='playing')$('message').textContent='빈 칸 터치 → 60° 회전 → 배치 확정';
   save();draw();
 }
-let eventTimer=null,eventQueue=[];
-function clearEvents(){if(eventTimer!==null)window.clearTimeout(eventTimer);eventTimer=null;eventQueue=[];$('discovery').hidden=true;}
+let eventTimer=null;
+function clearEvents(){if(eventTimer!==null)window.clearTimeout(eventTimer);eventTimer=null;$('discovery').hidden=true;}
 function showEvents(events){
-  eventQueue.push(...events);
-  if(eventTimer!==null||!eventQueue.length)return;
-  const event=eventQueue.shift();$('discovery').textContent=event.text;$('discovery').hidden=false;
-  eventTimer=window.setTimeout(()=>{eventTimer=null;$('discovery').hidden=true;showEvents([]);},2600);
+ const event=events.find(e=>e.id==='otter');if(!event)return;
+ clearEvents();$('discovery-text').textContent='새로운 동물 발견! 수달이 강가에 나타났어요.';$('discovery').hidden=false;
+ eventTimer=window.setTimeout(clearEvents,3000);
 }
-function resetView(next){clearEvents();game=next;controls.center(game.board);selected=null;update();}
+$('discovery-close').onclick=clearEvents;
+function positionActions(){
+ const panel=$('placement-actions');panel.hidden=!valid(selected)||game.status!=='playing'||controls.touch?.state==='rotate';if(panel.hidden)return;
+ const pos=board3d.projectWorld(Math.sqrt(3)*(selected.q+selected.r/2),.12,1.5*selected.r);
+ const width=180,height=54,hud=document.querySelector('.hud').getBoundingClientRect();
+ const x=Math.max(8,Math.min(innerWidth-width-64,pos.x-width/2));
+ const minY=Math.min(hud.bottom+8,innerHeight-height-110),maxY=innerHeight-height-110;
+ const y=Math.max(8,Math.min(maxY,Math.max(minY,pos.y+30)));
+ panel.style.left=x+'px';panel.style.top=y+'px';
+}
+function resetView(next){clearEvents();game=next;controls.center(game.board);selected=null;draftRotation=game.rotation;update();}
 function startExperiment(){
   const raw=String($('seed').value).trim(),seed=Number(raw);
   if(!/^\d+$/.test(raw)||!Number.isInteger(seed)||seed<0||seed>0xffffffff){$('message').textContent='시드는 0~4294967295 정수입니다.';return;}
@@ -92,15 +105,17 @@ $('copy-result').onclick=async()=>{
   try{await navigator.clipboard.writeText(value);$('copy-status').textContent='결과를 복사했습니다.';}
   catch{$('test-result').focus();$('test-result').select();$('copy-status').textContent='결과를 선택했습니다. 복사해 주세요.';}
 };
-function rotateCurrent(d){if(game.status!=='playing')return;game.rotation=(game.rotation-d+6)%6;update();}
+function rotateCurrent(d){if(game.status!=='playing')return;draftRotation=((selected?draftRotation:game.rotation)-d+6)%6;if(!selected){game.rotation=draftRotation;}update();}
 $('left').onclick=()=>rotateCurrent(-1);$('right').onclick=()=>rotateCurrent(1);
-$('confirm').onclick=()=>{if(!valid(selected))return;const result=place(game,selected.q,selected.r);if(result){selected=null;update();showEvents(result.events??[]);}};
-$('undo').onclick=()=>{if(undo(game)){clearEvents();selected=null;update();}};
+$('confirm').onclick=()=>{if(!valid(selected))return;const previous=game.rotation;game.rotation=draftRotation;const result=place(game,selected.q,selected.r);if(!result)game.rotation=previous;if(result){selected=null;update();showEvents(result.events??[]);}};
+$('cancel-placement').onclick=cancelSelection;
+$('floating-confirm').onclick=()=>$('confirm').onclick();
+$('undo').onclick=()=>{if(undo(game)){clearEvents();selected=null;draftRotation=game.rotation;update();}};
 $('restart').onclick=()=>resetView(restartGame(game));
 $('center').onclick=()=>controls.center(game.board);
 $('zoom-in').onclick=()=>controls.zoom(.85);$('zoom-out').onclick=()=>controls.zoom(1/.85);
 $('next').onclick=()=>{if(!game.experiment&&game.status==='won')resetView(createGame(game.stage+1));};
 $('help').onclick=()=>$('dialog').showModal();$('close').onclick=()=>$('dialog').close();
-window.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;if(e.key==='q'||e.key==='ArrowLeft')rotateCurrent(-1);if(e.key==='e'||e.key==='ArrowRight')rotateCurrent(1);if(e.key==='Escape'){selected=null;update();}});
+window.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;if(e.key==='q'||e.key==='ArrowLeft')rotateCurrent(-1);if(e.key==='e'||e.key==='ArrowRight')rotateCurrent(1);if(e.key==='Escape'){selected=null;draftRotation=game.rotation;update();}});
 window.addEventListener('resize',resize);resize();controls.center(game.board);update();
-window.hexHaven3D={stats:()=>board3d.stats()};
+window.hexHaven3D={gesture:()=>controls.touch?.state,preview:()=>selected?{...selected,rotation:draftRotation}:null,stats:()=>board3d.stats(),project:(x,y,z)=>board3d.projectWorld(x,y,z),otterPose:()=>board3d.otterPose()};

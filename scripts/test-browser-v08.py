@@ -28,11 +28,13 @@ with sync_playwright() as p:
     const v=new T.Vector3(Math.sqrt(3),.12,0).project(c);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2};
   }""")
   page.mouse.click(point['x'],point['y']);assert page.locator('#confirm').is_enabled()
-  page.locator('#right').click();assert state()['rotation']==5
+  (page.keyboard.press('ArrowRight') if touch else page.locator('#right').click());assert state()['rotation']==0 if touch else state()['rotation']==0
   baseline=page.evaluate('window.hexHaven3D.stats()')
-  for i in range(24):page.locator('#right').click()
+  for i in range(24):
+   if touch:page.keyboard.press('ArrowRight')
+   else:page.locator('#right').click()
   after=page.evaluate('window.hexHaven3D.stats()');assert after['geometries']<=baseline['geometries']+1
-  page.locator('#confirm').click();assert state()['index']==1
+  page.locator('#floating-confirm' if touch else '#confirm').click();assert state()['index']==1
   page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined');assert state()['index']==1
   page.locator('#undo').click();assert state()['index']==0
   # Background orbit must not place a tile, and touch pinch must not select.

@@ -18,7 +18,7 @@ with sync_playwright() as p:
   context=browser.new_context(viewport={'width':width,'height':height},is_mobile=touch,has_touch=touch,device_scale_factor=2 if touch else 1)
   page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.add_init_script("for(const k of ['hexhaven-save-v3','hexhaven-experiment-v07','hexhaven-view-v07'])localStorage.setItem(k,'OFFICIAL_SENTINEL')")
-  page.goto(base,wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
+  page.goto(base+'?testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
   def state():return page.evaluate("JSON.parse(localStorage.getItem('hexhaven-v08-experiment'))")
   assert state()['experiment']['seed']==202607
   point=page.evaluate("""async()=>{
@@ -27,14 +27,18 @@ with sync_playwright() as p:
     c.position.set(Math.sin(a)*Math.cos(e)*d,Math.sin(e)*d,Math.cos(a)*Math.cos(e)*d);c.lookAt(0,0,0);c.updateMatrixWorld();
     const v=new T.Vector3(Math.sqrt(3),.12,0).project(c);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2};
   }""")
-  page.mouse.click(point['x'],point['y']);assert page.locator('#confirm').is_enabled()
+  (page.touchscreen.tap(point['x'],point['y']) if touch else page.mouse.click(point['x'],point['y']));assert page.locator('#confirm').is_enabled()
   (page.keyboard.press('ArrowRight') if touch else page.locator('#right').click());assert state()['rotation']==0 if touch else state()['rotation']==0
   baseline=page.evaluate('window.hexHaven3D.stats()')
   for i in range(24):
    if touch:page.keyboard.press('ArrowRight')
    else:page.locator('#right').click()
   after=page.evaluate('window.hexHaven3D.stats()');assert after['geometries']<=baseline['geometries']+1
-  page.locator('#floating-confirm' if touch else '#confirm').click();assert state()['index']==1
+
+  if touch:
+   page.wait_for_function('!window.hexHaven3D.camera().focusing');pos=page.evaluate('window.hexHaven3D.project(Math.sqrt(3),.12,0)');page.touchscreen.tap(pos['x'],pos['y'])
+  else:page.locator('#confirm').click()
+  assert state()['index']==1
   page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined');assert state()['index']==1
   page.locator('#undo').click();assert state()['index']==0
   # Background orbit must not place a tile, and touch pinch must not select.
@@ -65,16 +69,26 @@ with sync_playwright() as p:
   report.append({'browser':'Chromium SwiftShader','viewport':f'{width}x{height}','touch':touch,'pageErrors':errors,'wonScene':stats,'medianRafMs':round(timing,2),'screenshot':str(shot)})
   context.close()
  # Explicit v0.7 import copies a valid save without modifying it.
- context=browser.new_context();page=context.new_page();page.goto(base,wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
+ context=browser.new_context();page=context.new_page();page.goto(base+'?testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
  original=page.evaluate("""async()=>{const E=await import('./src/engine.js');const game=E.createExperiment('comfort',42);E.place(game,1,0);const raw=JSON.stringify(E.serialize(game));localStorage.setItem('hexhaven-experiment-v07',raw);return raw;}""")
  page.locator('#settings-label').click();page.locator('#import-v07').click()
  assert page.evaluate("localStorage.getItem('hexhaven-experiment-v07')")==original
  assert page.evaluate("JSON.parse(localStorage.getItem('hexhaven-v08-experiment')).experiment.seed")==42
  assert page.evaluate("JSON.parse(localStorage.getItem('hexhaven-v08-experiment')).index")==1
  context.close()
+ # Two open renderers and BFCache must resume the latest committed snapshot.
+ context=browser.new_context();first=context.new_page();second=context.new_page();fallback=context.new_page()
+ for tab in [first,second]:tab.goto(base,wait_until='networkidle');tab.wait_for_function('window.hexHaven3D')
+ fallback.goto(base+'index-2d.html',wait_until='networkidle')
+ point=second.evaluate('window.hexHaven3D.project(Math.sqrt(3),.12,0)');second.mouse.click(point['x'],point['y'])
+ point=first.evaluate('window.hexHaven3D.project(Math.sqrt(3),.12,0)');first.mouse.click(point['x'],point['y']);first.locator('#confirm').click()
+ second.wait_for_function('window.hexHaven3D.preview()===null');assert second.locator('#remaining').inner_text()=='17';assert fallback.locator('#remaining').inner_text()=='17'
+ assert first.locator('#import-v07').is_disabled()
+ second.evaluate("window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}))");assert second.locator('#remaining').inner_text()=='17'
+ context.close()
  # WebGL unavailable: fallback link must render, without pretending 3D ran.
  context=browser.new_context();page=context.new_page();page.add_init_script("const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.includes('webgl')?null:original.call(this,type,...args)}")
- page.goto(base,wait_until='networkidle');assert page.locator('a[href="index-2d.html"]').last.is_visible();context.close()
+ page.goto(base+'?testUndo=1',wait_until='networkidle');assert page.locator('a[href^="index-2d.html"]').last.is_visible();context.close()
  browser.close()
 server.shutdown()
 print(json.dumps(report,indent=2))

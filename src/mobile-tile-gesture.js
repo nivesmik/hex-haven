@@ -1,8 +1,8 @@
 // Touch-only state machine. Timers and callbacks are injected for deterministic tests.
 export class MobileTileGesture{
- constructor(callbacks,{delay=400,slop=8,step=36,hysteresis=8,setTimer=(fn,ms)=>globalThis.setTimeout(fn,ms),clearTimer=id=>globalThis.clearTimeout(id)}={}){Object.assign(this,{callbacks,delay,slop,step,hysteresis,setTimer,clearTimer});this.state='idle';}
+ constructor(callbacks,{delay=400,slop=8,step=36,hysteresis=8,setTimer=(fn,ms)=>globalThis.setTimeout(fn,ms),clearTimer=id=>globalThis.clearTimeout(id),now=()=>performance.now()}={}){Object.assign(this,{callbacks,delay,slop,step,hysteresis,setTimer,clearTimer,now});this.state='idle';}
  stopTimer(){if(this.timer!=null)this.clearTimer(this.timer);this.timer=null;}
- down(e,cell){this.cancel();this.start={x:e.clientX,y:e.clientY};this.previous={...this.start};this.cell=cell;this.state='pending';this.direction=0;
+ down(e,cell){this.cancel();this.startedAt=this.now();this.start={x:e.clientX,y:e.clientY};this.previous={...this.start};this.cell=cell;this.state='pending';this.direction=0;
   if(this.callbacks.canRotate(cell))this.timer=this.setTimer(()=>{if(this.state!=='pending')return;this.timer=null;this.state='rotate';this.anchor=this.previous.x;this.callbacks.start(cell);},this.delay);
  }
  move(e){const next={x:e.clientX,y:e.clientY};
@@ -14,7 +14,7 @@ export class MobileTileGesture{
   }
   this.previous=next;
  }
- up(e){this.stopTimer();if(this.state==='pending'&&Math.hypot(e.clientX-this.start.x,e.clientY-this.start.y)<=this.slop)this.callbacks.tap(this.cell);
+ up(e){this.stopTimer();if(this.state==='pending'&&this.now()-this.startedAt<this.delay&&Math.hypot(e.clientX-this.start.x,e.clientY-this.start.y)<=this.slop)this.callbacks.tap(this.cell,{pointerType:'touch'});
   const rotating=this.state==='rotate';this.state='idle';if(rotating)this.callbacks.end();
  }
  cancel(){this.stopTimer();if(this.state==='rotate')this.callbacks.cancel();this.state='idle';}

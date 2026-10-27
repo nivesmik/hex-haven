@@ -1,8 +1,10 @@
+import {configureUndo} from './play-policy.js';
 import {renderBoard,renderPreviews,resizeCanvases} from './renderer.js';
 import {createGame,place,undo,available,rotate,serialize,deserialize,scorePlacement,objectives,createExperiment,restartGame,experimentResult,EXPERIMENT_MODES} from './engine.js';
 const $=id=>document.getElementById(id);
 const canvas=$('board'),ctx=canvas.getContext('2d'),preview=$('preview'),pctx=preview.getContext('2d');
 
+const allowUndo=configureUndo(document,location.search);
 const NORMAL_KEY='hexhaven-v08-save-v3',EXPERIMENT_KEY='hexhaven-v08-experiment',VIEW_KEY='hexhaven-v08-view';
 function readGame(key){try{return deserialize(JSON.parse(localStorage.getItem(key)));}catch{return null;}}
 let view;try{view=localStorage.getItem(VIEW_KEY)==='regular'?'regular':'experiment';}catch{view='experiment';}
@@ -32,7 +34,7 @@ function update(){
   $('score').textContent=game.score;$('target').textContent=game.target;
   $('remaining').textContent=game.deck.length-game.index;
   $('progress').style.width=Math.min(100,100*game.score/game.target)+'%';
-  $('undo').disabled=!game.history.length;
+  $('undo').disabled=!allowUndo||!game.history.length;
   $('left').disabled=$('right').disabled=game.status!=='playing';
   $('confirm').disabled=game.status!=='playing'||!valid(selected);
   $('next').hidden=!!experiment||game.status!=='won';
@@ -84,8 +86,8 @@ $('copy-result').onclick=async()=>{
 };
 function rotateCurrent(d){if(game.status!=='playing')return;game.rotation=(game.rotation-d+6)%6;update();}
 $('left').onclick=()=>rotateCurrent(-1);$('right').onclick=()=>rotateCurrent(1);
-$('confirm').onclick=()=>{if(!valid(selected))return;const result=place(game,selected.q,selected.r);if(result){selected=null;update();showEvents(result.events??[]);}};
-$('undo').onclick=()=>{if(undo(game)){clearEvents();selected=null;update();}};
+$('confirm').onclick=()=>{if(syncSavedGame()||!valid(selected))return;const result=place(game,selected.q,selected.r);if(result){selected=null;update();showEvents(result.events??[]);}};
+$('undo').onclick=()=>{if(!allowUndo||syncSavedGame())return;if(undo(game)){clearEvents();selected=null;update();}};
 $('restart').onclick=()=>resetView(restartGame(game));
 $('center').onclick=()=>{camera={x:0,y:0,zoom:1};draw();};
 $('next').onclick=()=>{if(!game.experiment&&game.status==='won')resetView(createGame(game.stage+1));};
@@ -96,4 +98,7 @@ canvas.addEventListener('pointermove',e=>{if(!pan||pan.id!==e.pointerId)return;c
 canvas.addEventListener('pointerup',e=>{if(pan&&pan.id===e.pointerId&&!pan.moved&&Math.hypot(e.clientX-pan.x,e.clientY-pan.y)<=8&&game.status==='playing'){const p=screenToHex(e.clientX,e.clientY);if(valid(p)){selected=p;update();}}if(pan?.id===e.pointerId)pan=null;});canvas.addEventListener('pointercancel',e=>{if(pan?.id===e.pointerId)pan=null;});canvas.addEventListener('lostpointercapture',e=>{if(pan?.id===e.pointerId)pan=null;});
 canvas.addEventListener('wheel',e=>{e.preventDefault();camera.zoom=Math.max(.55,Math.min(2,camera.zoom*(e.deltaY<0?1.1:.9)));draw();},{passive:false});
 window.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;if(e.key==='q'||e.key==='ArrowLeft')rotateCurrent(-1);if(e.key==='e'||e.key==='ArrowRight')rotateCurrent(1);if(e.key==='Escape'){selected=null;update();}});
+function syncSavedGame(){const current=readGame(game.experiment?EXPERIMENT_KEY:NORMAL_KEY);if(current&&JSON.stringify(serialize(current))!==JSON.stringify(serialize(game))){game=current;selected=null;pan=null;clearEvents();update();return true;}return false;}
+window.addEventListener('storage',e=>{if(e.key===(game.experiment?EXPERIMENT_KEY:NORMAL_KEY))syncSavedGame();});
+window.addEventListener('pageshow',()=>syncSavedGame());
 window.addEventListener('resize',resize);resize();update();

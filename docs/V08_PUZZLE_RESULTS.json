@@ -1,0 +1,323 @@
+{
+  "unit_tests": {
+    "passed": 44,
+    "failed": 0
+  },
+  "syntax": "passed",
+  "engine_ecosystem_experiment": "byte identical to previous mobile-final ZIP",
+  "chromium_mobile": [
+    {
+      "viewport": "390x844",
+      "label": "phone-portrait",
+      "touch": "passed",
+      "camera_framing": {
+        "left": 16.000036621109444,
+        "right": 316.45336734372313,
+        "top": 304.3202927260548,
+        "bottom": 573.2751019928644
+      },
+      "available_area": {
+        "left": 16,
+        "right": 324,
+        "top": 178,
+        "bottom": 712.0625
+      },
+      "save_reload_fallback_and_undo_flag": "passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "844x390",
+      "label": "phone-landscape",
+      "touch": "passed",
+      "camera_framing": {
+        "left": 309.56130239186103,
+        "right": 480.4330784160577,
+        "top": 126.25002997069997,
+        "bottom": 277.9871687049525
+      },
+      "available_area": {
+        "left": 16,
+        "right": 780,
+        "top": 126.25,
+        "bottom": 283
+      },
+      "save_reload_fallback_and_undo_flag": "passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "768x1024",
+      "label": "tablet-portrait",
+      "touch": "passed",
+      "camera_framing": {
+        "left": 112.97741057128877,
+        "right": 592.1409987487448,
+        "top": 316.51286881850405,
+        "bottom": 741.5459756258418
+      },
+      "available_area": {
+        "left": 16,
+        "right": 702,
+        "top": 178,
+        "bottom": 892.0625
+      },
+      "save_reload_fallback_and_undo_flag": "passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "1024x768",
+      "label": "tablet-landscape",
+      "touch": "passed",
+      "camera_framing": {
+        "left": 301.2542314679322,
+        "right": 662.089586282537,
+        "top": 242.19370607615565,
+        "bottom": 563.2424121828526
+      },
+      "available_area": {
+        "left": 16,
+        "right": 958,
+        "top": 178,
+        "bottom": 636.0625
+      },
+      "save_reload_fallback_and_undo_flag": "passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "320x568",
+      "label": "small-phone",
+      "touch": "passed",
+      "camera_framing": {
+        "left": 16.000077078842416,
+        "right": 248.94086318424826,
+        "top": 221.2168438948758,
+        "bottom": 433.44600271811265
+      },
+      "available_area": {
+        "left": 16,
+        "right": 256,
+        "top": 200,
+        "bottom": 461
+      },
+      "save_reload_fallback_and_undo_flag": "passed",
+      "page_errors": []
+    }
+  ],
+  "webkit": [
+    {
+      "engine": "Linux WebKit WPE",
+      "viewport": "390x844",
+      "WebGL_and_native_tap_select_cancel_confirm_reload": "passed",
+      "page_errors": [],
+      "physical_iOS_Safari": false
+    },
+    {
+      "engine": "Linux WebKit WPE",
+      "viewport": "768x1024",
+      "WebGL_and_native_tap_select_cancel_confirm_reload": "passed",
+      "page_errors": [],
+      "physical_iOS_Safari": false
+    },
+    {
+      "engine": "Linux WebKit WPE",
+      "viewport": "1024x768",
+      "WebGL_and_native_tap_select_cancel_confirm_reload": "passed",
+      "page_errors": [],
+      "physical_iOS_Safari": false
+    }
+  ],
+  "physical_iPhone_iPad_Android": "not tested",
+  "performance": "Software GPU emulator only; not a hardware benchmark",
+  "chromium_general": [
+    {
+      "browser": "Chromium SwiftShader",
+      "viewport": "1280x800",
+      "touch": false,
+      "pageErrors": [],
+      "wonScene": {
+        "drawCalls": 146,
+        "triangles": 2352,
+        "geometries": 18,
+        "textures": 0,
+        "pixelRatio": 1
+      },
+      "medianRafMs": 16.7,
+      "screenshot": "/tmp/hex-haven-v08-1280.png"
+    },
+    {
+      "browser": "Chromium SwiftShader",
+      "viewport": "390x844",
+      "touch": true,
+      "pageErrors": [],
+      "wonScene": {
+        "drawCalls": 146,
+        "triangles": 2352,
+        "geometries": 18,
+        "textures": 0,
+        "pixelRatio": 1.5
+      },
+      "medianRafMs": 16.7,
+      "screenshot": "/tmp/hex-haven-v08-390.png"
+    },
+    {
+      "browser": "Chromium SwiftShader",
+      "viewport": "320x568",
+      "touch": true,
+      "pageErrors": [],
+      "wonScene": {
+        "drawCalls": 146,
+        "triangles": 2352,
+        "geometries": 18,
+        "textures": 0,
+        "pixelRatio": 1.5
+      },
+      "medianRafMs": 16.7,
+      "screenshot": "/tmp/hex-haven-v08-320.png"
+    }
+  ],
+  "pc_pan_and_otter": [
+    {
+      "viewport": "1280x800",
+      "pageErrors": [],
+      "pan": [
+        {
+          "orbitDrag": 0,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            50.0,
+            -0.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -50.0,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            -0.0,
+            -45.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            0.0,
+            45.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            50.0,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -50.0,
+            -0.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            0.0,
+            -45.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            -0.0,
+            45.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            50.0,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -50.0,
+            -0.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            -0.0,
+            -45.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            0.0,
+            45.0
+          ]
+        }
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "pageErrors": [],
+      "pan": []
+    }
+  ],
+  "tested_at_utc": "2026-10-27T06:49:13.300141+00:00"
+}

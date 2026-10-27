@@ -48,4 +48,25 @@ dialog{max-height:80dvh;overflow:auto}button:focus-visible,input:focus-visible,s
 #placement-actions{position:fixed;z-index:8;display:flex;gap:20px;width:180px;padding:4px;border-radius:13px;background:#fffffff0;box-shadow:0 3px 14px #23452b22}
 #placement-actions[hidden]{display:none}#placement-actions button{min-width:76px;min-height:46px;border-radius:10px;color:#315f48}#floating-confirm{background:#277d58;color:white!important}
 .discovery{display:flex;align-items:center;gap:10px;top:calc(env(safe-area-inset-top,0px) + 150px);bottom:auto;right:12px;pointer-events:none}.discovery[hidden]{display:none}#discovery-close{pointer-events:auto;min-width:44px;min-height:44px;border-radius:10px;background:#edf3e9;color:#315f48}
-@media(pointer:coarse){.dock .round,.dock #confirm{display:none}.dock{pointer-events:none;padding:4px 10px}#tilegrab{width:98px}.scorehint{bottom:calc(env(safe-area-inset-bottom,0px) + 104px)}.toast{bottom:calc(env(safe-area-inset-bottom,0px) + 86px)}}
+@media(pointer:coarse){.visual3d .dock .round,.visual3d .dock #confirm{display:none}.visual3d .dock{pointer-events:none;padding:4px 10px}.visual3d #tilegrab{width:98px}.visual3d .scorehint{bottom:calc(env(safe-area-inset-bottom,0px) + 104px)}.toast{bottom:calc(env(safe-area-inset-bottom,0px) + 86px)}}
+
+/* v0.8 direct-touch puzzle experiment; fallback keeps its placement controls. */
+.tools button[hidden],.scorehint[hidden],.toast[hidden]{display:none}
+@media(pointer:coarse){
+ #placement-actions{display:none!important}
+ .visual3d .game .tools{top:calc(env(safe-area-inset-top,0px) + 170px);bottom:auto}
+ .visual3d .game .dock{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+ .visual3d .game #selection{bottom:calc(env(safe-area-inset-bottom,0px) + 94px);max-width:calc(100% - 28px);right:12px}
+}
+@media(pointer:coarse) and (max-height:600px){
+ .visual3d .game .hud{max-width:calc(100% - 166px);padding-top:calc(env(safe-area-inset-top,0px) + 4px)}
+ .visual3d .game .goal-card>b,.visual3d .game #objective{min-height:16px}
+ .visual3d .game .experiment-settings summary{padding:4px;min-height:32px}
+ .visual3d .game .tools{flex-direction:column;top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);gap:2px}
+ .visual3d .game .dock{right:calc(env(safe-area-inset-right,0px) + 62px);left:auto}
+ .visual3d .game #selection{left:12px;right:175px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);max-width:calc(100% - 190px)}
+}
+
+.visual3d .game{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.visual3d .hud{padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+.visual3d .tools{right:calc(env(safe-area-inset-right,0px) + 10px)}

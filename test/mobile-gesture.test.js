@@ -17,3 +17,9 @@ test('almanac records derive from persisted discovery IDs without granting rewar
  assert.equal(records.version,1);assert.equal(records.animals.length,1);assert.equal(records.animals[0].id,'otter');assert.equal(JSON.stringify(game),before);
  assert.deepEqual(animalDiscoveryRecords({}),{version:1,animals:[]});
 });
+
+test('long holds outside a rotatable cell are never interpreted as short taps',()=>{
+ let now=0,taps=0;const g=new MobileTileGesture({canRotate:()=>false,tap:()=>taps++,pan(){},cancel(){}},{now:()=>now});
+ const e={clientX:5,clientY:10};g.down(e,null);now=500;g.up(e);assert.equal(taps,0);
+ g.down(e,null);now=550;g.up(e);assert.equal(taps,1);
+});

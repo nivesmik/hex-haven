@@ -17,9 +17,9 @@ export function tileGroup(tile,kit,{ghost=false,decorations=true}={}){
   const p=edgePoint(dir,.48);
   if(terrain==='forest')kit.tree(g,p.x,p.z,.75+(dir%2)*.12);
   if(terrain==='village'&&dir%2===0)kit.house(g,p.x,p.z);
-  if(terrain==='grass'&&dir===0)kit.rock(g,p.x*.5,p.z*.5);
+  if(terrain==='grass'&&dir===0){const before=g.children.length;kit.rock(g,p.x*.5,p.z*.5);for(const mesh of g.children.slice(before))mesh.userData.detail=true;}
  }
- if(decorations&&!tile.special&&tile.edges.filter(t=>t==='forest'||t==='grass').length>=4&&Math.abs((tile.q??0)*7+(tile.r??0)*11)%4===0)kit.mountain(g);
+ if(decorations&&!tile.special&&tile.edges.filter(t=>t==='forest'||t==='grass').length>=4&&Math.abs((tile.q??0)*7+(tile.r??0)*11)%4===0){const before=g.children.length;kit.mountain(g);for(const mesh of g.children.slice(before))mesh.userData.detail=true;}
  if(tile.special){
   const star=kit.mesh(g,kit.geometry('special',()=>new THREE.OctahedronGeometry(.14)),0xd6ac50,0,.55,0);star.rotation.z=Math.PI/4;
  }

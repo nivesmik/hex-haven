@@ -1,0 +1,156 @@
+{
+  "version": "v0.8",
+  "baseline_sha": "c69baf34fec5ae0427d03fb9602f5178e71c4c2f",
+  "archive_sha256": "58d06ffdb7ed98d34fa196e2290fece248b0ffd1cc609a57a12b06a14f266401",
+  "comparison": {
+    "same": [
+      "PR_DESCRIPTION.ko.md",
+      "docs/TERRAIN_BONUS_PROPOSAL.md",
+      "docs/V07_VALIDATION.md",
+      "docs/V08_BROWSER_RESULTS.json",
+      "docs/V08_PAN_OTTER.md",
+      "docs/V08_PAN_OTTER_RESULTS.json",
+      "docs/V08_PUZZLE_RESULTS.json",
+      "docs/V08_VISUAL_PROTOTYPE.md",
+      "docs/screenshots/mobile-rotation.png",
+      "docs/screenshots/otter-after.png",
+      "docs/screenshots/otter-before.png",
+      "docs/screenshots/otter-mobile-after.png",
+      "docs/screenshots/otter-mobile-before.png",
+      "docs/screenshots/puzzle-phone-landscape.png",
+      "docs/screenshots/puzzle-phone-portrait.png",
+      "docs/screenshots/puzzle-small-phone.png",
+      "docs/screenshots/puzzle-tablet-landscape.png",
+      "docs/screenshots/puzzle-tablet-portrait.png",
+      "package.json",
+      "scripts/requirements-browser.txt",
+      "scripts/simulate.js",
+      "scripts/verified_pages.py",
+      "src/animal-discoveries.js",
+      "src/boot3d.js",
+      "src/ecosystem.js",
+      "src/engine.js",
+      "src/experiment.js",
+      "src/main.js",
+      "src/placement-preview.js",
+      "src/play-policy.js",
+      "src/renderer.js",
+      "src/visuals/hex-layout.js",
+      "src/visuals/nature.js",
+      "src/visuals/otter-placement.js",
+      "src/visuals/otter.js",
+      "test/ecosystem.test.js",
+      "test/engine.test.js",
+      "test/experiment-ui.test.js",
+      "test/fixtures/main-v3-save.json",
+      "test/fixtures/v07-simulation.json",
+      "test/mobile-gesture.test.js",
+      "test/pan-otter.test.js",
+      "test/puzzle-camera.test.js",
+      "test/renderer.test.js",
+      "test/simulation.test.js",
+      "test/ui.test.js",
+      "test/visual3d.test.js",
+      "test-support/browser.js",
+      "test-support/solver.js",
+      "vendor/three/LICENSE",
+      "vendor/three/README.md",
+      "vendor/three/three.module.js"
+    ],
+    "different": [
+      ".github/workflows/test.yml",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "DECISIONS.md",
+      "GAME_DESIGN.md",
+      "README.md",
+      "docs/V08_MOBILE_FINAL.md",
+      "docs/V08_PUZZLE_UX.md",
+      "index-2d.html",
+      "index.html",
+      "scripts/test-browser-v08.py",
+      "scripts/test-mobile-v08.py",
+      "scripts/test-v08-pan-otter.py",
+      "scripts/test-webkit-v08.py",
+      "src/camera-controls.js",
+      "src/main2d.js",
+      "src/main3d.js",
+      "src/mobile-tile-gesture.js",
+      "src/renderer3d.js",
+      "src/visuals/hex-terrain.js",
+      "style.css",
+      "tools/build-pages-preview.py"
+    ],
+    "new": [
+      "docs/V08_INTEGRATED_UX.md",
+      "scripts/capture-integrated-scenes.py",
+      "scripts/test-integrated-v08.py",
+      "src/app-shell.js",
+      "src/preview-motion.js",
+      "src/session-state.js",
+      "test/integrated-ux.test.js"
+    ]
+  },
+  "product_source_matches_archive": true,
+  "node_tests": {
+    "command": "npm test",
+    "passed": 50,
+    "failed": 0
+  },
+  "syntax_and_diff_check": "passed",
+  "integrated_chromium": [
+    {
+      "viewport": "390x844",
+      "label": "iphone-portrait",
+      "checks": "selection/lift/rotation/relocation/camera hold/short double tap/pan/pinch/bounds/strategy/commit/undo/2D roundtrip/scoped selection/abandon/reload: passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "844x390",
+      "label": "iphone-landscape",
+      "checks": "selection/lift/rotation/relocation/camera hold/short double tap/pan/pinch/bounds/strategy/commit/undo/2D roundtrip/scoped selection/abandon/reload: passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "768x1024",
+      "label": "ipad-portrait",
+      "checks": "selection/lift/rotation/relocation/camera hold/short double tap/pan/pinch/bounds/strategy/commit/undo/2D roundtrip/scoped selection/abandon/reload: passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "1024x768",
+      "label": "ipad-landscape",
+      "checks": "selection/lift/rotation/relocation/camera hold/short double tap/pan/pinch/bounds/strategy/commit/undo/2D roundtrip/scoped selection/abandon/reload: passed",
+      "page_errors": []
+    },
+    {
+      "viewport": "1280x800",
+      "PC": "orbit/rotate/commit/test undo/existing Pass path: passed"
+    }
+  ],
+  "chromium_basic": "passed (1280x800, 390x844, 320x568)",
+  "pan_otter": "passed",
+  "webkit_local": {
+    "status": "blocked",
+    "error": "BrowserType.launch: Host system is missing dependencies: libgtk-4.so.1, libgraphene-1.0.so.0, libharfbuzz-icu.so.0, libmanette-0.2.so.0, libhyphen.so.0, libGLESv2.so.2"
+  },
+  "physical_iOS_Android": "not tested",
+  "deployment_path": "hex-haven-preview/current/",
+  "recovery_adjustments": [
+    "Wait for completed camera focus in mobile regression after draft relocation; no product code changes beyond archive.",
+    "Preview tool example and documentation target current/; manifest explicitly includes version v0.8."
+  ],
+  "mobile_chromium": {
+    "status": "passed",
+    "viewports": [
+      "390x844",
+      "844x390",
+      "768x1024",
+      "1024x768",
+      "320x568"
+    ],
+    "animal_notice": "X / 3 seconds / no duplicate: passed",
+    "initial_test_failure": "Camera focus race after relocation; fixed test by waiting for focus completion, rerun passed."
+  }
+}
+

@@ -18,7 +18,7 @@ with sync_playwright() as p:
   context=browser.new_context(viewport={'width':width,'height':height},is_mobile=touch,has_touch=touch,device_scale_factor=2 if touch else 1)
   page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.add_init_script("for(const k of ['hexhaven-save-v3','hexhaven-experiment-v07','hexhaven-view-v07'])localStorage.setItem(k,'OFFICIAL_SENTINEL')")
-  page.goto(base+'?testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
+  page.goto(base+'?play=1&testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
   def state():return page.evaluate("JSON.parse(localStorage.getItem('hexhaven-v08-experiment'))")
   assert state()['experiment']['seed']==202607
   point=page.evaluate("""async()=>{
@@ -40,7 +40,7 @@ with sync_playwright() as p:
   else:page.locator('#confirm').click()
   assert state()['index']==1
   page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined');assert state()['index']==1
-  page.locator('#undo').click();assert state()['index']==0
+  page.locator('#menu-open').click();page.locator('#undo').click();page.locator('#menu-resume').click();assert state()['index']==0
   # Background orbit must not place a tile, and touch pinch must not select.
   page.mouse.move(width/2,height/2);page.mouse.down();page.mouse.move(width/2+45,height/2+10,steps=5);page.mouse.up();assert state()['index']==0
   if touch:
@@ -48,8 +48,8 @@ with sync_playwright() as p:
    for kind,points in [('touchStart',[{'x':width/2-30,'y':height/2},{'x':width/2+30,'y':height/2}]),('touchMove',[{'x':width/2-55,'y':height/2},{'x':width/2+55,'y':height/2}]),('touchEnd',[])]:
     session.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':points})
    assert state()['index']==0
-  page.locator('#settings-label').click();page.locator('#difficulty').select_option('challenge');assert state()['experiment']['difficulty']=='challenge'
-  page.locator('#difficulty').select_option('standard');page.locator('#settings-label').click()
+  page.locator('#menu-open').click();page.locator('#settings-label').click();page.locator('#difficulty').select_option('challenge');page.locator('#quit-confirm').click();page.locator('#menu-open').click();assert state()['experiment']['difficulty']=='challenge'
+  page.locator('#difficulty').select_option('standard');page.locator('#quit-confirm').click()
   # Replay an existing v0.7 solution through the unchanged engine, then load it in 3D.
   solution=next(row for row in json.loads((ROOT/'test/fixtures/v07-simulation.json').read_text())['results'] if row['difficulty']=='standard' and row['seed']==202607)
   page.evaluate("""async path=>{const E=await import('./src/engine.js');const game=E.createExperiment('standard',202607);for(const move of path){game.rotation=move.rotation;E.place(game,move.q,move.r);}localStorage.setItem('hexhaven-v08-experiment',JSON.stringify(E.serialize(game)));}""",solution['path'])
@@ -69,16 +69,16 @@ with sync_playwright() as p:
   report.append({'browser':'Chromium SwiftShader','viewport':f'{width}x{height}','touch':touch,'pageErrors':errors,'wonScene':stats,'medianRafMs':round(timing,2),'screenshot':str(shot)})
   context.close()
  # Explicit v0.7 import copies a valid save without modifying it.
- context=browser.new_context();page=context.new_page();page.goto(base+'?testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
+ context=browser.new_context();page=context.new_page();page.goto(base+'?play=1&testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
  original=page.evaluate("""async()=>{const E=await import('./src/engine.js');const game=E.createExperiment('comfort',42);E.place(game,1,0);const raw=JSON.stringify(E.serialize(game));localStorage.setItem('hexhaven-experiment-v07',raw);return raw;}""")
- page.locator('#settings-label').click();page.locator('#import-v07').click()
+ page.locator('#menu-open').click();page.locator('#settings-label').click();page.locator('#import-v07').click()
  assert page.evaluate("localStorage.getItem('hexhaven-experiment-v07')")==original
  assert page.evaluate("JSON.parse(localStorage.getItem('hexhaven-v08-experiment')).experiment.seed")==42
  assert page.evaluate("JSON.parse(localStorage.getItem('hexhaven-v08-experiment')).index")==1
  context.close()
  # Two open renderers and BFCache must resume the latest committed snapshot.
  context=browser.new_context();first=context.new_page();second=context.new_page();fallback=context.new_page()
- for tab in [first,second]:tab.goto(base,wait_until='networkidle');tab.wait_for_function('window.hexHaven3D')
+ for tab in [first,second]:tab.goto(base+'?play=1',wait_until='networkidle');tab.wait_for_function('window.hexHaven3D')
  fallback.goto(base+'index-2d.html',wait_until='networkidle')
  point=second.evaluate('window.hexHaven3D.project(Math.sqrt(3),.12,0)');second.mouse.click(point['x'],point['y'])
  point=first.evaluate('window.hexHaven3D.project(Math.sqrt(3),.12,0)');first.mouse.click(point['x'],point['y']);first.locator('#confirm').click()
@@ -88,7 +88,7 @@ with sync_playwright() as p:
  context.close()
  # WebGL unavailable: fallback link must render, without pretending 3D ran.
  context=browser.new_context();page=context.new_page();page.add_init_script("const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.includes('webgl')?null:original.call(this,type,...args)}")
- page.goto(base+'?testUndo=1',wait_until='networkidle');assert page.locator('a[href^="index-2d.html"]').last.is_visible();context.close()
+ page.goto(base+'?play=1&testUndo=1',wait_until='networkidle');assert page.locator('a[href^="index-2d.html"]').last.is_visible();context.close()
  browser.close()
 server.shutdown()
 print(json.dumps(report,indent=2))

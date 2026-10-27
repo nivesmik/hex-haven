@@ -1,3 +1,4 @@
+import {PreviewMotion} from './preview-motion.js';
 import * as THREE from '../vendor/three/three.module.js';
 import {available,key,ecosystemProgress} from './engine.js';
 import {placementPreview} from './placement-preview.js';
@@ -8,12 +9,13 @@ import {createOtter,animateOtter} from './visuals/otter.js';
 import {otterAnchor} from './visuals/otter-placement.js';
 export class Board3D{
  constructor(canvas){
-  this.canvas=canvas;this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'});
+  this.previewMotion=new PreviewMotion();this.canvas=canvas;this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'});
   this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
   this.renderer.outputColorSpace=THREE.SRGBColorSpace;
   this.scene=new THREE.Scene();this.scene.background=new THREE.Color(0xe5ebe1);
   this.camera=new THREE.PerspectiveCamera(38,1,.1,180);
   this.kit=new NatureKit();this.tiles=new Map();this.spots=new Map();this.preview=null;this.highlight=new THREE.Group();this.ecology=new THREE.Group();this.scene.add(this.highlight,this.ecology);
+  this.frontierMaterial=new THREE.LineBasicMaterial({color:0x8ba991,transparent:true,opacity:.22});this.terrainOutlineMaterial=new THREE.LineBasicMaterial({color:0x718970,transparent:true,opacity:0});
   this.scene.add(new THREE.HemisphereLight(0xf1f4e9,0xa0ac8c,2.4));
   const sun=new THREE.DirectionalLight(0xffebce,2.2);sun.position.set(-4,9,6);this.scene.add(sun);
   this.ground=this.kit.mesh(this.scene,this.kit.geometry('ground',()=>new THREE.PlaneGeometry(180,180)),0xdce3d5,0,-.4,0);this.ground.rotation.x=-Math.PI/2;
@@ -33,19 +35,22 @@ export class Board3D{
  setGame(game,cell){
   for(const [id,entry] of this.tiles)if(game.board.get(id)!==entry.tile){this.scene.remove(entry.group);this.tiles.delete(id);}
   for(const [id,tile] of game.board)if(!this.tiles.has(id)){
-   const group=tileGroup(tile,this.kit),p=axialToWorld(tile.q,tile.r);group.position.set(p.x,0,p.z);this.scene.add(group);this.tiles.set(id,{tile,group});
+   const group=tileGroup(tile,this.kit);group.add(new THREE.LineLoop(this.kit.geometry('terrain-outline',()=>new THREE.BufferGeometry().setFromPoints(Array.from({length:6},(_,i)=>{const p=edgePoint(i,1,Math.PI/6);return new THREE.Vector3(p.x,TILE_TOP+.007,p.z);}))),this.terrainOutlineMaterial));const p=axialToWorld(tile.q,tile.r);group.position.set(p.x,0,p.z);this.scene.add(group);this.tiles.set(id,{tile,group});
   }
   const frontier=game.status==='playing'?new Map(available(game.board).map(p=>[key(p.q,p.r),p])):new Map();
   for(const [id,group] of this.spots)if(!frontier.has(id)){this.scene.remove(group);this.spots.delete(id);}
   for(const [id,p] of frontier)if(!this.spots.has(id)){
    const group=new THREE.Group(),pos=axialToWorld(p.q,p.r);
+   const outline=new THREE.LineLoop(this.kit.geometry('frontier-outline',()=>new THREE.BufferGeometry().setFromPoints(Array.from({length:6},(_,i)=>{const p=edgePoint(i,1,Math.PI/6);return new THREE.Vector3(p.x,TILE_TOP+.006,p.z);}))),this.frontierMaterial);outline.name='frontier-outline';group.add(outline);
    const mark=this.kit.mesh(group,this.kit.geometry('spot',()=>new THREE.CircleGeometry(.09,8)),0x9db29b,0,TILE_TOP,0);mark.rotation.x=-Math.PI/2;
    group.position.set(pos.x,0,pos.z);this.scene.add(group);this.spots.set(id,group);
   }
   for(const [id,group] of this.spots)group.visible=!cell||id!==key(cell.q,cell.r);
+  const cellKey=cell?key(cell.q,cell.r):null;if(cellKey!==this.cellKey){this.previewMotion.reset();this.cellKey=cellKey;}
   this.clearPreview();const forecast=placementPreview(game,cell);
   if(forecast){
    const p=axialToWorld(cell.q,cell.r);this.preview=tileGroup({...forecast,...cell},this.kit,{ghost:true});this.preview.position.set(p.x,0,p.z);this.scene.add(this.preview);
+   const outline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(Array.from({length:6},(_,i)=>{const a=edgePoint(i,1,Math.PI/6);return new THREE.Vector3(p.x+a.x,TILE_TOP+.018,p.z+a.z);})),new THREE.LineBasicMaterial({color:0xc5b374,transparent:true,opacity:.85}));this.highlight.add(outline);
    for(const connection of forecast.connections){
     const [a,b]=edgeVertices(connection.dir),geometry=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(p.x+a.x,TILE_TOP+.025,p.z+a.z),new THREE.Vector3(p.x+b.x,TILE_TOP+.025,p.z+b.z)]);
     const material=new THREE.LineBasicMaterial({color:COLORS[connection.terrain],transparent:true,opacity:connection.matches?1:.35});
@@ -72,26 +77,30 @@ export class Board3D{
     this.kit.tree(this.ecology,p.x+.1,p.z-.13,eco.vegetation?.8:.4);
    }
   }
-  this.invalidate();return forecast;
+  const mode=this.strategic;this.strategic=null;this.setStrategic(mode);return forecast;
  }
+ setManipulating(held){if(!this.preview&&!held){this.previewMotion.reset();return;}this.previewMotion.setHeld(held,performance.now());this.invalidate();}
+ turnPreview(direction){this.previewMotion.turn(direction,performance.now());}
+ setStrategic(enabled){if(this.strategic===enabled)return;this.strategic=enabled;this.terrainOutlineMaterial.opacity=enabled?.3:0;for(const group of this.spots.values()){const line=group.getObjectByName('frontier-outline');if(line)line.material.opacity=enabled?.65:.22;}for(const {group} of this.tiles.values())for(const mesh of group.children)if(mesh.userData.detail)mesh.visible=!enabled;this.invalidate();}
+ previewPose(){return this.previewMotion.sample(performance.now(),this.motion.matches);}
  invalidate(){
   if(this.lost||document.hidden)return;
+  const pose=this.previewPose();if(this.preview){this.preview.scale.setScalar(pose.scale);this.preview.position.y=pose.height;this.preview.rotation.y=pose.turn;}
   if(this.otter&&this.motion.matches)animateOtter(this.otter,0,true);
   this.renderer.render(this.scene,this.camera);
-  if(this.otter&&!this.motion.matches&&this.frame==null)this.frame=requestAnimationFrame(t=>this.animate(t));
+  if(((this.otter&&!this.motion.matches)||pose.active)&&this.frame==null)this.frame=requestAnimationFrame(t=>this.animate(t));
  }
  animate(t){
   this.frame=null;
-  if(this.lost||document.hidden||!this.otter)return;
-  if(this.motion.matches){this.invalidate();return;}
-  animateOtter(this.otter,t);
+  if(this.lost||document.hidden)return;
+  if(this.otter)animateOtter(this.otter,t,this.motion.matches);
   this.invalidate();
  }
  projectWorld(x,y,z){const p=new THREE.Vector3(x,y,z).project(this.camera),r=this.canvas.getBoundingClientRect();return {x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};}
  otterPose(){return this.otter?{rootY:this.otter.position.y,headYaw:this.otter.userData.headPivot.rotation.y,tailYaw:this.otter.userData.tailPivot.rotation.y}:null;}
  stats(){return {drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,pixelRatio:this.renderer.getPixelRatio()};}
  dispose(){
-  cancelAnimationFrame(this.frame);this.clearPreview();this.kit.dispose();this.renderer.dispose();
+  cancelAnimationFrame(this.frame);this.clearPreview();this.frontierMaterial.dispose();this.terrainOutlineMaterial.dispose();this.kit.dispose();this.renderer.dispose();
   this.motion.removeEventListener('change',this.onMotion);document.removeEventListener('visibilitychange',this.onVisibility);this.canvas.removeEventListener('webglcontextlost',this.onLost);this.canvas.removeEventListener('webglcontextrestored',this.onRestored);
  }
 }

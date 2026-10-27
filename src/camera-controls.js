@@ -1,15 +1,16 @@
+import {available} from './engine.js';
 import {MobileTileGesture} from './mobile-tile-gesture.js';
 import * as THREE from '../vendor/three/three.module.js';
 import {TILE_TOP,worldToAxial,axialToWorld} from './visuals/hex-layout.js';
 export class CameraControls{
  constructor(canvas,camera,onChange,onTap,tileCallbacks=null){
   this.canvas=canvas;this.camera=camera;this.onChange=onChange;this.onTap=onTap;this.points=new Map();this.listeners=[];this.reset();
-  if(tileCallbacks)this.touch=new MobileTileGesture({...tileCallbacks,tap:onTap,pan:(...args)=>{this.translate(...args);this.update();}});
+  if(tileCallbacks)this.touch=new MobileTileGesture({...tileCallbacks,tap:onTap,pan:(...args)=>{this.translate(...args);this.update();},cameraMove:(dx,dy)=>{this.angle-=dx*.008;this.distance*=Math.exp(dy*.008);this.update();}});
   const listen=(type,fn,options)=>{canvas.addEventListener(type,fn,options);this.listeners.push([type,fn,options]);};
-  listen('contextmenu',e=>e.preventDefault());
+  for(const event of ['contextmenu','selectstart','dragstart'])listen(event,e=>{if(e.cancelable)e.preventDefault();},{passive:false});
   listen('pointerdown',e=>{
    if(e.pointerType==='mouse'&&![0,2].includes(e.button))return;
-   this.stopFocus();e.preventDefault();canvas.setPointerCapture(e.pointerId);
+   this.stopFocus();this.stopViewTransition();if(e.cancelable)e.preventDefault();canvas.setPointerCapture(e.pointerId);
    this.points.set(e.pointerId,{x:e.clientX,y:e.clientY});
    if(e.pointerType==='touch'&&this.touch){if(this.points.size===1)this.touch.down(e,this.pick(e.clientX,e.clientY));else this.touch.cancel();}
    if(this.points.size===1){this.start={id:e.pointerId,x:e.clientX,y:e.clientY};this.moved=false;this.pan=e.shiftKey||e.button===2;}
@@ -35,16 +36,17 @@ export class CameraControls{
   });
   listen('pointerup',e=>{
    if(!this.points.has(e.pointerId))return;
-   if(e.pointerType==='touch'&&this.touch){this.touch.up(e);this.points.delete(e.pointerId);return;}
+   if(e.pointerType==='touch'&&this.touch){this.touch.up(e);this.points.delete(e.pointerId);if(!this.points.size)this.settleBounds();return;}
    const tap=!this.pan&&this.points.size===1&&!this.moved&&this.start?.id===e.pointerId&&Math.hypot(e.clientX-this.start.x,e.clientY-this.start.y)<=8;
    this.points.delete(e.pointerId);if(tap)this.onTap(this.pick(e.clientX,e.clientY),{pointerType:e.pointerType});
-   if(!this.points.size)this.start=null;
+   if(!this.points.size){this.start=null;this.settleBounds();}
   });
   const cancel=e=>{if(this.points.has(e.pointerId)){this.touch?.cancel();this.points.delete(e.pointerId);this.moved=true;this.start=null;}};
   listen('pointercancel',cancel);listen('lostpointercapture',cancel);
+  this.extraListeners=[];if(globalThis.window&&globalThis.document){const blur=()=>this.cancelInputs(),hidden=()=>{if(document.hidden)this.cancelInputs();};window.addEventListener('blur',blur);document.addEventListener('visibilitychange',hidden);this.extraListeners.push([window,'blur',blur],[document,'visibilitychange',hidden]);}
   listen('wheel',e=>{e.preventDefault();this.zoom(e.deltaY>0?1.08:1/1.08);},{passive:false});
  }
- reset(){this.stopFocus();this.angle=.6;this.elevation=.9;this.distance=17;this.target=new THREE.Vector3();this.update();}
+ reset(){this.stopFocus();this.stopViewTransition();this.strategic=false;this.landscapeElevation=.9;this.angle=.6;this.elevation=.9;this.distance=17;this.target=new THREE.Vector3();this.update();}
  center(board){
   this.reset();
   const points=[...board.values()].map(t=>axialToWorld(t.q,t.r));if(!points.length)return;
@@ -66,7 +68,9 @@ export class CameraControls{
  update(){
   this.distance=Math.max(6,Math.min(42,this.distance));this.elevation=Math.max(.4,Math.min(1.3,this.elevation));
   this.camera.position.set(this.target.x+Math.sin(this.angle)*Math.cos(this.elevation)*this.distance,Math.sin(this.elevation)*this.distance,this.target.z+Math.cos(this.angle)*Math.cos(this.elevation)*this.distance);
-  this.camera.lookAt(this.target);this.camera.updateMatrixWorld();this.onChange?.();
+  this.camera.lookAt(this.target);this.camera.updateMatrixWorld();
+  if(this.bounds){const target=this.limitedTarget(true);if(target.distanceTo(this.target)>1e-8){this.target.copy(target);this.camera.position.set(this.target.x+Math.sin(this.angle)*Math.cos(this.elevation)*this.distance,Math.sin(this.elevation)*this.distance,this.target.z+Math.cos(this.angle)*Math.cos(this.elevation)*this.distance);this.camera.lookAt(this.target);this.camera.updateMatrixWorld();}}
+  if(!this.focus)this.updateViewMode();this.onChange?.();
  }
  focusPose(cell,rect){
   const canvasRect=this.canvas.getBoundingClientRect(),camera=this.camera.clone();
@@ -99,10 +103,39 @@ export class CameraControls{
   const focus={start:null,frame:null};this.focus=focus;
   const frame=now=>{if(this.focus!==focus)return;if(focus.start===null)focus.start=now;const t=Math.min(1,(now-focus.start)/duration),ease=t*t*(3-2*t);
    this.target.lerpVectors(from.target,to.target,ease);this.distance=from.distance+(to.distance-from.distance)*ease;this.update();
-   if(t<1)focus.frame=requestAnimationFrame(frame);else this.focus=null;
+   if(t<1)focus.frame=requestAnimationFrame(frame);else{this.focus=null;this.updateViewMode();}
   };focus.frame=requestAnimationFrame(frame);
  }
  stopFocus(){if(this.focus?.frame!=null)cancelAnimationFrame(this.focus.frame);this.focus=null;}
+ setBoard(board){
+  const points=[...board.values(),...available(board)].map(p=>axialToWorld(p.q,p.r));
+  this.bounds=points.length?{minX:Math.min(...points.map(p=>p.x))-1,maxX:Math.max(...points.map(p=>p.x))+1,minZ:Math.min(...points.map(p=>p.z))-1,maxZ:Math.max(...points.map(p=>p.z))+1}:null;
+ }
+ limitedTarget(soft=false){
+  if(!this.bounds)return this.target.clone();const r=this.canvas.getBoundingClientRect();
+  const points=[[0,0],[r.width,0],[0,r.height],[r.width,r.height]].map(([x,y])=>this.pointOnBoard(r.left+x,r.top+y)).filter(Boolean);
+  const span=axis=>points.length?Math.max(...points.map(p=>p[axis]))-Math.min(...points.map(p=>p[axis])):this.distance;
+  const marginX=Math.max(.2,Math.min(2,span('x')*.125)),marginZ=Math.max(.2,Math.min(2,span('z')*.125));
+  const limit=(v,min,max,margin)=>{let lo=min+1.7-margin,hi=max-1.7+margin;if(lo>hi)lo=hi=(min+max)/2;const clamped=Math.max(lo,Math.min(hi,v)),delta=v-clamped;return clamped+(soft?delta/(1+Math.abs(delta)*4):0);};
+  return new THREE.Vector3(limit(this.target.x,this.bounds.minX,this.bounds.maxX,marginX),0,limit(this.target.z,this.bounds.minZ,this.bounds.maxZ,marginZ));
+ }
+ settleBounds(){
+  if(!this.bounds||this.focus)return;const to=this.limitedTarget();if(to.distanceTo(this.target)<.001)return;
+  const from=this.target.clone(),animation={frame:null,start:null};this.focus=animation;
+  const frame=now=>{if(this.focus!==animation)return;if(animation.start===null)animation.start=now;const t=Math.min(1,(now-animation.start)/140);this.target.lerpVectors(from,to,1-(1-t)**3);this.update();if(t<1)animation.frame=requestAnimationFrame(frame);else{this.focus=null;this.updateViewMode();}};animation.frame=requestAnimationFrame(frame);
+ }
+ updateViewMode(){
+  const normalized=this.distance*Math.sqrt(Math.min(1,this.camera.aspect));let next=this.strategic;
+  if(!next&&normalized>24)next=true;else if(next&&normalized<20)next=false;if(next===this.strategic)return;
+  if(next)this.landscapeElevation=this.elevation;this.strategic=next;
+  this.stopViewTransition();const from=this.elevation,to=next?1.22:this.landscapeElevation;
+  if(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){this.elevation=to;return;}
+  let start=null;const animate=now=>{if(start===null)start=now;const t=Math.min(1,(now-start)/240);this.elevation=from+(to-from)*t*t*(3-2*t);this.update();if(t<1)this.viewFrame=requestAnimationFrame(animate);else this.viewFrame=null;};
+  if(globalThis.requestAnimationFrame)this.viewFrame=requestAnimationFrame(animate);else this.elevation=to;
+ }
+ stopViewTransition(){if(this.viewFrame!=null)cancelAnimationFrame(this.viewFrame);this.viewFrame=null;}
+ pauseInputs(){if(['rotate','camera'].includes(this.touch?.state))this.touch.up({clientX:this.touch.previous.x,clientY:this.touch.previous.y});this.cancelInputs();}
+ cancelInputs(){this.touch?.cancel();const ids=[...this.points.keys()];this.points.clear();this.start=null;this.moved=true;for(const id of ids)if(this.canvas.hasPointerCapture?.(id))this.canvas.releasePointerCapture(id);this.stopFocus();this.stopViewTransition();}
  pointOnBoard(x,y){
   const r=this.canvas.getBoundingClientRect(),ray=new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1),this.camera);
@@ -110,5 +143,5 @@ export class CameraControls{
   return point;
  }
  pick(x,y){const point=this.pointOnBoard(x,y);return point?worldToAxial(point.x,point.z):null;}
- dispose(){this.stopFocus();this.touch?.cancel();for(const args of this.listeners)this.canvas.removeEventListener(...args);this.points.clear();}
+ dispose(){this.cancelInputs();for(const [target,type,fn] of this.extraListeners??[])target.removeEventListener(type,fn);for(const args of this.listeners)this.canvas.removeEventListener(...args);this.points.clear();}
 }

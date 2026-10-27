@@ -1,3 +1,5 @@
+> 이전 실험 기록입니다. 현재 통합 UX는 [V08_INTEGRATED_UX.md](V08_INTEGRATED_UX.md)를 우선합니다.
+
 > 이전 버튼 기반 실험 기록입니다. 현재 모바일 직접 조작/undo 정책은 [V08_PUZZLE_UX.md](V08_PUZZLE_UX.md)를 우선합니다.
 
 # v0.8 모바일 조작 최종 패치

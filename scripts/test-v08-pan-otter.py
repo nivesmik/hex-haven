@@ -18,7 +18,7 @@ with sync_playwright() as p:
  for width,height in [(1280,800),(390,844)]:
   context=browser.new_context(viewport={'width':width,'height':height},has_touch=width<600,is_mobile=width<600,reduced_motion='reduce')
   page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-  page.goto(base,wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
+  page.goto(base+'?play=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')
   # Use the unchanged v0.7 solution and fixed camera framing on both revisions.
   page.evaluate("""async path=>{const E=await import('./src/engine.js');const g=E.createExperiment('standard',202607);for(const m of path){g.rotation=m.rotation;E.place(g,m.q,m.r);}localStorage.setItem('hexhaven-v08-experiment',JSON.stringify(E.serialize(g)));}""",solution['path'])
   page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D !== undefined')

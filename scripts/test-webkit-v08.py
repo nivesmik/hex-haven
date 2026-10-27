@@ -23,13 +23,13 @@ with sync_playwright() as p:
   context=browser.new_context(viewport={'width':width,'height':height},is_mobile=True,has_touch=True)
   page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   if args.url:page.route('https://nivesmik.github.io/**',verified)
-  page.goto(base,wait_until='networkidle');page.wait_for_function('window.hexHaven3D')
+  page.goto(base+'?play=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D')
   def point(q=1,r=0):return page.evaluate('p=>window.hexHaven3D.project(Math.sqrt(3)*(p.q+p.r/2),.12,1.5*p.r)',{'q':q,'r':r})
   def tap(pos):page.touchscreen.tap(pos['x'],pos['y'])
   before=page.evaluate('k=>localStorage.getItem(k)',key);tap(point());page.wait_for_function('!window.hexHaven3D.camera().focusing');assert page.evaluate('window.hexHaven3D.preview()') is not None
   page.keyboard.press('ArrowRight');assert page.evaluate('k=>localStorage.getItem(k)',key)==before
   page.screenshot(path=str(out/f'webkit-{width}.png'))
-  tap(point(0,0));assert page.evaluate('window.hexHaven3D.preview()') is None;assert page.evaluate('k=>localStorage.getItem(k)',key)==before
+  tap(point(0,0));page.wait_for_timeout(300);assert page.evaluate('window.hexHaven3D.preview()') is None;assert page.evaluate('k=>localStorage.getItem(k)',key)==before
   tap(point());page.wait_for_function('!window.hexHaven3D.camera().focusing');tap(point());assert page.evaluate('k=>JSON.parse(localStorage.getItem(k)).index',key)==1
   page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D');assert page.evaluate('k=>JSON.parse(localStorage.getItem(k)).index',key)==1;assert page.locator('#undo').is_hidden()
   assert not errors,errors;results.append({'engine':'Linux WebKit WPE','viewport':f'{width}x{height}','WebGL_and_native_tap_select_cancel_confirm_reload':'passed','page_errors':errors,'physical_iOS_Safari':False});context.close()

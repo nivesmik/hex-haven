@@ -21,7 +21,7 @@ with sync_playwright() as p:
   print('Testing',label,flush=True)
   c=b.new_context(viewport={'width':width,'height':height},is_mobile=True,has_touch=True);page=c.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   if args.url:page.route('https://nivesmik.github.io/**',verified)
-  page.goto(base,wait_until='networkidle');page.wait_for_function('window.hexHaven3D')
+  page.goto(base+'?play=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D')
   session=c.new_cdp_session(page)
   def touch(kind,pts):
    session.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':[{'x':x,'y':y,'id':i} for i,(x,y) in enumerate(pts)]})
@@ -42,8 +42,9 @@ with sync_playwright() as p:
   # All corners of all seven hexes lie inside the available viewport.
   bounds=page.evaluate('''()=>{let points=[];for(const [q,r] of [[1,0],[2,0],[2,-1],[1,-1],[0,0],[0,1],[1,1]])for(let i=0;i<6;i++)for(const y of [.12,.95])points.push(window.hexHaven3D.project(Math.sqrt(3)*(q+r/2)+Math.cos(i*Math.PI/3+Math.PI/6),y,1.5*r+Math.sin(i*Math.PI/3+Math.PI/6)));return {left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),top:Math.min(...points.map(p=>p.y)),bottom:Math.max(...points.map(p=>p.y))};}''')
   assert bounds['left']>=area['left']-.2 and bounds['right']<=area['right']+.2 and bounds['top']>=area['top']-.2 and bounds['bottom']<=area['bottom']+.2,(label,bounds,area)
-  # Outside available cell cancels without relocating or changing the engine.
-  tap(point(0,1));assert preview() is None;assert state()==before
+  # Approved change: another empty cell relocates once and preserves the draft.
+  tap(point(0,1));assert preview()['r']==1;assert state()==before;wait_focus()
+  tap(point(0,0));page.wait_for_timeout(300);assert preview() is None
   # Preview/camera stop at the next down; hold, rotate, release never commits.
   tap(point());pos=point();touch('touchStart',[(pos['x'],pos['y'])]);page.wait_for_timeout(450);assert page.evaluate('window.hexHaven3D.gesture()')=='rotate'
   frozen=page.evaluate('window.hexHaven3D.camera()');x,y=pos['x'],pos['y'];touch('touchMove',[(x+45,y)]);assert preview()['rotation']==5
@@ -52,41 +53,42 @@ with sync_playwright() as p:
   touch('touchEnd',[]);assert state()==before and preview()['rotation']==1
   page.screenshot(path=str(out/(label+'.png')))
   # UI taps have priority and do not cancel. Score/terrain forecast updated.
-  assert '예상 +' in page.locator('#selection').inner_text();page.locator('#help').tap();assert preview() is not None;page.locator('#close').tap()
+  assert '예상 +' in page.locator('#selection').inner_text();page.locator('#menu-open').tap();page.locator('#menu-help').tap();assert preview() is not None;page.locator('#close').tap()
   # A second short tap commits exactly one tile using the draft orientation.
   tap(point());committed=json.loads(state());assert committed['index']==1;assert committed['history'][-1]['rotation']==1;assert preview() is None
   # No DOM invocation or reload/fallback switch bypasses normal undo policy.
   page.evaluate("document.getElementById('undo').onclick()");assert json.loads(state())['index']==1
   page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D');assert json.loads(state())['index']==1
   page.goto(base+'index-2d.html',wait_until='networkidle');assert page.locator('#undo').is_hidden();page.evaluate("document.getElementById('undo').onclick()");assert json.loads(state())['index']==1
-  page.goto(base+'?testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D');page.locator('#undo').tap();assert json.loads(state())['index']==0
-  page.goto(base,wait_until='networkidle');page.wait_for_function('window.hexHaven3D');before=state()
+  page.goto(base+'?play=1&testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D');page.locator('#menu-open').tap();page.locator('#undo').tap();page.locator('#menu-resume').tap();assert json.loads(state())['index']==0
+  page.goto(base+'?play=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D');before=state()
   # Pinch and pan cannot confirm/cancel a selected preview.
   tap(point());wait_focus();pos=point();x,y=pos['x'],pos['y'];touch('touchStart',[(x,y)]);touch('touchMove',[(x+25,y)]);page.wait_for_timeout(450);assert page.evaluate('window.hexHaven3D.gesture()')=='pan';touch('touchEnd',[]);assert preview() is not None and state()==before
   # Background tap cancels only; now begin pan before 400ms on a fresh empty cell.
-  tap(point(0,0));assert preview() is None;pos=point();x,y=pos['x'],pos['y'];touch('touchStart',[(x,y)]);touch('touchMove',[(x+25,y)]);page.wait_for_timeout(450);touch('touchEnd',[]);assert preview() is None and state()==before
+  tap(point(0,0));page.wait_for_timeout(300);assert preview() is None;pos=point();x,y=pos['x'],pos['y'];touch('touchStart',[(x,y)]);touch('touchMove',[(x+25,y)]);page.wait_for_timeout(450);touch('touchEnd',[]);assert preview() is None and state()==before
   # A second finger interrupts rotation safely; pinch still zooms, never places.
   pos=point();x,y=pos['x'],pos['y'];touch('touchStart',[(x,y)]);page.wait_for_timeout(450);touch('touchStart',[(x,y),(x+70,y)]);assert preview() is None
   dist=page.evaluate('window.hexHaven3D.camera().distance');touch('touchMove',[(x-20,y),(x+90,y)]);touch('touchEnd',[]);assert page.evaluate('window.hexHaven3D.camera().distance')<dist;assert state()==before
   pos=point();touch('touchStart',[(pos['x'],pos['y'])]);page.wait_for_timeout(450);touch('touchCancel',[]);assert preview() is None and state()==before
   # Excessive manual zoom is backed off just enough for seven tiles, not reset.
-  for i in range(8):page.locator('#zoom-in').tap()
+  page.locator('#board').hover()
+  for i in range(8):page.mouse.wheel(0,-100)
   near=page.evaluate('window.hexHaven3D.camera().distance');tap(point());wait_focus();assert page.evaluate('window.hexHaven3D.camera().distance')>near
-  tap(point(0,0));assert preview() is None
+  tap(point(0,0));page.wait_for_timeout(300);assert preview() is None
   assert not errors,errors
   report.append({'viewport':f'{width}x{height}','label':label,'touch':'passed','camera_framing':bounds,'available_area':area,'save_reload_fallback_and_undo_flag':'passed','page_errors':errors})
   c.close()
  # Animal notification: real engine path, no intermediate alerts, close/timeout/no replay.
  c=b.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True);page=c.new_page()
  if args.url:page.route('https://nivesmik.github.io/**',verified)
- page.goto(base+'?testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D')
+ page.goto(base+'?play=1&testUndo=1',wait_until='networkidle');page.wait_for_function('window.hexHaven3D')
  row=next(r for r in json.loads((root/'test/fixtures/v07-simulation.json').read_text())['results'] if r['difficulty']=='standard' and r['seed']==202607)
  page.evaluate("""async ({path,key})=>{const E=await import('./src/engine.js');const g=E.createExperiment('standard',202607);for(const m of path){g.rotation=m.rotation;E.place(g,m.q,m.r);}g.ecosystem.seen=g.ecosystem.seen.filter(id=>id!=='otter');E.undo(g);localStorage.setItem(key,JSON.stringify(E.serialize(g)));}""",{'path':row['path'],'key':key})
  page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D');m=row['path'][-1]
  def discover():
   pos=page.evaluate('m=>window.hexHaven3D.project(Math.sqrt(3)*(m.q+m.r/2),.12,1.5*m.r)',m);page.touchscreen.tap(pos['x'],pos['y']);page.wait_for_function('!window.hexHaven3D.camera().focusing');pos=page.evaluate('m=>window.hexHaven3D.project(Math.sqrt(3)*(m.q+m.r/2),.12,1.5*m.r)',m);page.touchscreen.tap(pos['x'],pos['y'])
  pre=page.evaluate('(k)=>localStorage.getItem(k)',key);discover();assert page.locator('#discovery-text').inner_text()=='새로운 동물 발견! 수달이 강가에 나타났어요.';assert page.locator('#discovery').is_visible();page.locator('#discovery-close').tap();assert page.locator('#discovery').is_hidden()
- page.locator('#undo').tap();discover();assert page.locator('#discovery').is_hidden()
+ page.locator('#menu-open').tap();page.locator('#undo').tap();page.locator('#menu-resume').tap();discover();assert page.locator('#discovery').is_hidden()
  page.evaluate('({key,raw})=>localStorage.setItem(key,raw)',{'key':key,'raw':pre});page.reload(wait_until='networkidle');page.wait_for_function('window.hexHaven3D');discover();assert page.locator('#discovery').is_visible();page.wait_for_timeout(3100);assert page.locator('#discovery').is_hidden()
  c.close();b.close()
 if server:server.shutdown()

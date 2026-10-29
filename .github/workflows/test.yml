@@ -20,19 +20,17 @@ jobs:
           python-version: '3.12'
       - run: pip install -r scripts/requirements-browser.txt
       - run: python -m playwright install --with-deps chromium webkit
-      - run: python scripts/test-browser-v08.py
       - run: python scripts/test-v08-pan-otter.py --output /tmp/v08-after --assert-fixed
       - uses: actions/upload-artifact@v4
         with:
           name: v08-pan-otter-screenshots
           path: /tmp/v08-after/
-      - run: python scripts/test-mobile-v08.py
-      - run: python scripts/test-webkit-v08.py
+      - run: python scripts/test-thumb-v081.py --engine webkit --output /tmp/v081-webkit
       - run: python scripts/test-integrated-v08.py
       - uses: actions/upload-artifact@v4
         with:
           name: v08-puzzle-mobile-tablet
           path: |
-            /tmp/v08-puzzle/
-            /tmp/v08-webkit/
+            /tmp/v081-thumb/
+            /tmp/v081-webkit/
             /tmp/v08-integrated/

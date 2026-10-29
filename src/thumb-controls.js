@@ -1,7 +1,13 @@
 // The gesture owns its initial pointer until release, even outside the pad.
+export class ThumbRotation{
+ constructor(){this.begin(0);}
+ begin(x){this.anchor=x;this.direction=0;}
+ move(x){const turns=[];let dx=x-this.anchor,sign=Math.sign(dx),limit=32+(this.direction&&sign!==this.direction?8:0);
+ while(Math.abs(dx)>=limit){turns.push(sign);this.direction=sign;this.anchor+=sign*32;dx=x-this.anchor;sign=Math.sign(dx);limit=32+(sign!==this.direction?8:0);}return turns;}
+}
 export class ThumbControls{
  constructor({enabled,onStart,onTurn,onEnd,onConfirm,onCancel,onLearn}){
-  Object.assign(this,{enabled,onStart,onTurn,onEnd,onConfirm,onCancel,onLearn});this.points=new Set();this.turns=0;this.epoch=0;
+  Object.assign(this,{enabled,onStart,onTurn,onEnd,onConfirm,onCancel,onLearn});this.points=new Set();this.turns=0;this.epoch=0;this.rotation=new ThumbRotation();
   document.querySelector('main.game').insertAdjacentHTML('beforeend',`<section id="thumb-controls" aria-label="타일 회전 및 배치" hidden><div id="thumb-rotate" role="slider" tabindex="0" aria-label="좌우로 밀어 타일 회전" aria-valuemin="0" aria-valuemax="300" aria-valuenow="0"><span aria-hidden="true">↶</span><span id="thumb-instruction">좌우로 밀어 회전</span><span aria-hidden="true">↷</span></div><div class="thumb-buttons"><button id="thumb-cancel" aria-label="미리보기 취소">× <span>취소</span></button><small>방향 유지 · 자동 배치 없음</small><button id="thumb-confirm" aria-label="미리보기 배치">✓ <span>배치</span></button></div></section>`);
   this.panel=document.getElementById('thumb-controls');this.pad=document.getElementById('thumb-rotate');
   const down=e=>{
@@ -13,12 +19,11 @@ export class ThumbControls{
   window.addEventListener('pointerdown',down,true);window.addEventListener('pointerup',release,true);window.addEventListener('pointercancel',release,true);
   this.pad.addEventListener('pointerdown',e=>{
    if(this.blocked||this.points.size!==1||!this.enabled()||e.button!==0)return;
-   e.preventDefault();this.owner=e.pointerId;this.anchor=e.clientX;this.direction=0;this.pad.setPointerCapture(e.pointerId);this.panel.dataset.rotating='true';this.onStart();
+   e.preventDefault();this.owner=e.pointerId;this.rotation.begin(e.clientX);this.pad.setPointerCapture(e.pointerId);this.panel.dataset.rotating='true';this.onStart();
   });
   this.pad.addEventListener('pointermove',e=>{
    if(e.pointerId!==this.owner||this.blocked)return;e.preventDefault();
-   let dx=e.clientX-this.anchor,sign=Math.sign(dx),limit=32+(this.direction&&sign!==this.direction?8:0);
-   while(Math.abs(dx)>=limit){this.onTurn(sign);this.onLearn();this.direction=sign;this.anchor+=sign*32;dx=e.clientX-this.anchor;sign=Math.sign(dx);limit=32+(sign!==this.direction?8:0);}
+   for(const sign of this.rotation.move(e.clientX)){this.onTurn(sign);this.onLearn();}
   });
   for(const name of ['pointerup','pointercancel','lostpointercapture'])this.pad.addEventListener(name,e=>{if(e.pointerId===this.owner)this.finish();});
   this.pad.addEventListener('keydown',e=>{if(!this.enabled()||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();this.onTurn(e.key==='ArrowRight'?1:-1);this.onLearn();});

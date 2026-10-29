@@ -92,3 +92,8 @@ body[data-app-screen="home"] .game>.hud,body[data-app-screen="home"] .game>.dock
 .integrated .goal-card{display:flex;flex-direction:column}.integrated .goal-card .meter{margin-top:auto;flex-shrink:0}
 
 .integrated .hud{pointer-events:auto;touch-action:manipulation}.integrated .goal-card,.integrated .run-meta{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.integrated.visual3d .dock{pointer-events:auto}
+
+/* v0.8.1-test.1: readable puzzle status, shared by 2D/3D. */
+.integrated .hud{max-width:570px}.integrated .goal-card small{font-size:12px;color:#36523d}.integrated .goal-card>b{font-size:15px;color:#254631}.integrated .run-meta{font-size:13px;font-weight:650;color:#294a35}.integrated .meter{height:5px}
+#win-condition{font-size:12px;line-height:1.5;margin:7px 0 0;padding:5px 8px;border-radius:8px;color:#34523b;background:#f6f9eded}
+#stage-result{position:absolute;z-index:7;top:40%;left:50%;transform:translate(-50%,-10%);width:min(350px,calc(100% - 40px));padding:22px;background:#fafff3f5;border:1px solid #b4c4a7;border-radius:20px;box-shadow:0 12px 50px #344c3620;text-align:center;color:#315a3e}#stage-result h2{font-size:25px;margin:0 0 12px}#stage-result p{font-size:14px;line-height:1.6}#stage-result button{min-height:48px;border-radius:12px;padding:10px 22px}body[data-run-status="lost"] #result-title{color:#945740}body[data-run-status="won"] #message,body[data-run-status="lost"] #message{display:none}body[data-app-screen="home"] #stage-result{display:none}.integrated #next{z-index:8;bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}

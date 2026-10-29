@@ -1,3 +1,4 @@
+import {StageHUD} from './stage-hud.js';
 import {AppShell} from './app-shell.js';
 import {configureUndo} from './play-policy.js';
 import {animalDiscoveryRecords} from './animal-discoveries.js';
@@ -9,6 +10,7 @@ import {createGame,place,undo,available,rotate,serialize,deserialize,scorePlacem
 const $=id=>document.getElementById(id);
 const canvas=$('board'),preview=$('preview'),pctx=preview.getContext('2d');
 
+const stageHUD=new StageHUD();
 const allowUndo=configureUndo(document,location.search);
 const mobile=()=>matchMedia('(pointer:coarse)').matches;
 const SESSION_KEY='hexhaven-v08-session';
@@ -89,7 +91,7 @@ function update(){
   if(selected&&learned)$('interaction-hint').textContent='길게 회전 · 탭 배치 · 빈 칸 이동';
   $('message').textContent=game.status==='won'?'Pass · 목표 달성':game.status==='lost'?'Fail · 타일 소진':'';
   $('message').hidden=game.status==='playing';
-  save();shell?.update(game);draw();
+  stageHUD.update(game);save();shell?.update(game);draw();
 }
 let eventTimer=null;
 function clearEvents(){if(eventTimer!==null)window.clearTimeout(eventTimer);eventTimer=null;$('discovery').hidden=true;}

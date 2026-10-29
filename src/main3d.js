@@ -1,3 +1,4 @@
+import {ThumbControls} from './thumb-controls.js';
 import {StageHUD} from './stage-hud.js';
 import {AppShell} from './app-shell.js';
 import {configureUndo} from './play-policy.js';
@@ -14,8 +15,8 @@ const stageHUD=new StageHUD();
 const allowUndo=configureUndo(document,location.search);
 const mobile=()=>matchMedia('(pointer:coarse)').matches;
 const SESSION_KEY='hexhaven-v08-session';
-let shell=null,controls;
-let learned=false;try{learned=localStorage.getItem(SESSION_KEY+':learned')==='1';}catch{}
+let shell=null,controls,thumb=null;
+let learned=false;try{learned=localStorage.getItem(SESSION_KEY+':thumb-learned')==='1';}catch{}
 const NORMAL_KEY='hexhaven-v08-save-v3',EXPERIMENT_KEY='hexhaven-v08-experiment',VIEW_KEY='hexhaven-v08-view';
 function readGame(key){try{return deserialize(JSON.parse(localStorage.getItem(key)));}catch{return null;}}
 let view;try{view=localStorage.getItem(VIEW_KEY)==='regular'?'regular':'experiment';}catch{view='experiment';}
@@ -27,19 +28,18 @@ let selected=null,draftRotation=game.rotation;
 const displayGame=()=>({...game,rotation:selected?draftRotation:game.rotation});
 function playArea(){
  const hud=document.querySelector('.hud').getBoundingClientRect(),dock=document.querySelector('.dock').getBoundingClientRect();
- const hint=$('selection').getBoundingClientRect(),left=16+(parseFloat(getComputedStyle($('game')).paddingLeft)||0);
- return {left,right:innerWidth-left,top:hud.bottom+12,bottom:Math.max(hud.bottom+100,Math.min(dock.top,hint.height?hint.top:dock.top)-16)};
+ const hint=$('selection').getBoundingClientRect(),pad=$('thumb-controls')?.getBoundingClientRect(),bottomPad=pad?.height?pad.top:dock.top,left=16+(parseFloat(getComputedStyle($('game')).paddingLeft)||0);
+ return {left,right:innerWidth-left,top:hud.bottom+12,bottom:Math.max(hud.bottom+100,Math.min(bottomPad,hint.height?hint.top:bottomPad)-16)};
 }
 function selectTile(cell,{focus=false}={}){if(valid(cell)&&game.status==='playing'){if(!selected)draftRotation=game.rotation;selected=cell;update();if(focus)controls.focusCell(cell,playArea(),{reducedMotion:matchMedia('(prefers-reduced-motion:reduce)').matches});}}
 function tapTile(cell,{pointerType}={}){
  if(pointerType!=='touch'){selectTile(cell);return;}
- if(selected&&cell&&cell.q===selected.q&&cell.r===selected.r){confirmPlacement();return;}
- if(valid(cell))selectTile(cell,{focus:true});else cancelSelection();
+ if(valid(cell))selectTile(cell,{focus:true});
 }
-function cancelSelection(){controls?.touch?.clearOutside();controls?.stopFocus();board3d.setManipulating(false);selected=null;draftRotation=game.rotation;update();}
+function cancelSelection(){thumb?.pause();controls?.touch?.clearOutside();controls?.stopFocus();board3d.setManipulating(false);selected=null;draftRotation=game.rotation;update();}
 const board3d=new Board3D(canvas);
 controls=new CameraControls(canvas,board3d.camera,()=>{board3d.invalidate();if(controls){board3d.setStrategic(!!controls.strategic);$('view-mode').hidden=!controls.strategic;}if(selected)positionActions();},tapTile,{
- canRotate:cell=>(!shell||shell.playing)&&valid(cell)&&(!selected||(cell.q===selected.q&&cell.r===selected.r))&&game.status==='playing',
+ canRotate:()=>false,
  canCamera:cell=>(!shell||shell.playing)&&!valid(cell),
  start:cell=>{selectTile(cell);board3d.setManipulating(true);$('gesture-cue').textContent='↶  좌우로 회전  ↷';$('gesture-cue').hidden=false;},
  rotate:rotateCurrent,end:()=>{board3d.setManipulating(false);$('gesture-cue').hidden=true;update();},cancel:()=>{$('gesture-cue').hidden=true;cancelSelection();},
@@ -52,7 +52,7 @@ canvas.addEventListener('hex-webgl-restored',()=>update());
 const spots=()=>available(game.board),valid=p=>p&&spots().some(s=>s.q===p.q&&s.r===p.r);
 const save=()=>{try{localStorage.setItem(game.experiment?EXPERIMENT_KEY:NORMAL_KEY,JSON.stringify(serialize(game)));localStorage.setItem(VIEW_KEY,game.experiment?'experiment':'regular')}catch{}};
 function draw(){controls.setBoard(game.board);board3d.setGame(displayGame(),selected);renderPreviews(pctx,displayGame());positionActions();}
-function resize(){controls.cancelInputs();preview.width=100;preview.height=100;board3d.resize();draw();}
+function resize(){thumb?.pause();controls.cancelInputs();preview.width=100;preview.height=100;board3d.resize();draw();}
 function update(){
   const goal=objectives(game),experiment=game.experiment;
   $('objective').textContent=experiment?`수달 발견 · 강 ${goal.ecosystem.water}/${experiment.goals.water} · 강가 숲 ${goal.ecosystem.forest}/${experiment.goals.forest}`:
@@ -84,11 +84,10 @@ function update(){
     const source=game.deck[game.index],result=scorePlacement(game.board,selected.q,selected.r,rotate(source.edges,draftRotation),source.special);
     const forecast=placementPreview(displayGame(),selected),before=forecast.before.ecosystem,after=forecast.after.ecosystem;
     const eco=after?` · 강 ${before.water}→${after.water}/${game.experiment.goals.water} · 숲 ${before.forest}→${after.forest}/${game.experiment.goals.forest}${after.otter?' · 수달 조건 충족':after.water===game.experiment.goals.water-1||after.forest===game.experiment.goals.forest-1?' · 목표에 가까워요':''}`:'';
-    $('selection').textContent=`예상 +${result.points}별 · 일치 ${result.matches}면${eco}`;
+    $('selection').textContent=`예상 +${result.points}별 · ${source.special?'특별 타일 · ':''}일치 ${result.matches}면${eco}`;
   }else $('selection').textContent='';
   $('selection').hidden=!selected;
-  $('interaction-hint').textContent=selected?(learned?'돌려 배치':'길게 눌러 회전 · 다시 탭 배치 · 빈 칸 이동 · 바깥 취소'):(learned?'':'빈 칸 터치 · 드래그로 이동');
-  if(selected&&learned)$('interaction-hint').textContent='길게 회전 · 탭 배치 · 빈 칸 이동';
+  $('interaction-hint').textContent=selected?'다른 빈 칸 탭으로 위치 이동':'빈 칸을 탭해 타일을 선택하세요';
   $('message').textContent=game.status==='won'?'Pass · 목표 달성':game.status==='lost'?'Fail · 타일 소진':'';
   $('message').hidden=game.status==='playing';
   stageHUD.update(game);save();shell?.update(game);draw();
@@ -102,6 +101,7 @@ function showEvents(events){
 }
 $('discovery-close').onclick=clearEvents;
 function positionActions(){
+ thumb?.update({visible:mobile()&&!!valid(selected)&&game.status==='playing',rotation:draftRotation,learned});
  const panel=$('placement-actions');panel.hidden=mobile()||!valid(selected)||game.status!=='playing'||controls.touch?.state==='rotate';if(panel.hidden)return;
  const pos=board3d.projectWorld(Math.sqrt(3)*(selected.q+selected.r/2),.12,1.5*selected.r);
  const width=180,height=54,hud=document.querySelector('.hud').getBoundingClientRect();
@@ -140,9 +140,9 @@ function rotateCurrent(d){if((shell&&!shell.playing)||game.status!=='playing')re
 $('left').onclick=()=>rotateCurrent(-1);$('right').onclick=()=>rotateCurrent(1);
 function syncSavedGame(){
  const key=game.experiment?EXPERIMENT_KEY:NORMAL_KEY,current=readGame(key);
- if(current&&JSON.stringify(serialize(current))!==JSON.stringify(serialize(game))){clearEvents();controls.stopFocus();game=current;selected=null;draftRotation=game.rotation;update();return true;}return false;
+ if(current&&JSON.stringify(serialize(current))!==JSON.stringify(serialize(game))){clearEvents();thumb?.pause();controls.stopFocus();game=current;selected=null;draftRotation=game.rotation;update();return true;}return false;
 }
-function confirmPlacement(){if((shell&&(!shell.playing||!shell.readLatest()))||syncSavedGame()||!valid(selected))return;controls.stopFocus();const previous=game.rotation;game.rotation=draftRotation;const result=place(game,selected.q,selected.r);if(!result)game.rotation=previous;if(result){learned=true;try{localStorage.setItem(SESSION_KEY+':learned','1');}catch{}selected=null;draftRotation=game.rotation;board3d.setManipulating(false);update();showEvents(result.events??[]);}}
+function confirmPlacement(){if((shell&&(!shell.playing||!shell.readLatest()))||syncSavedGame()||!valid(selected))return;controls.stopFocus();const previous=game.rotation;game.rotation=draftRotation;const result=place(game,selected.q,selected.r);if(!result)game.rotation=previous;if(result){selected=null;draftRotation=game.rotation;board3d.setManipulating(false);update();showEvents(result.events??[]);}}
 $('confirm').onclick=confirmPlacement;
 $('cancel-placement').onclick=cancelSelection;
 $('floating-confirm').onclick=()=>$('confirm').onclick();
@@ -155,6 +155,7 @@ $('help').onclick=()=>$('dialog').showModal();$('close').onclick=()=>$('dialog')
 window.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;if(e.key==='q'||e.key==='ArrowLeft')rotateCurrent(-1);if(e.key==='e'||e.key==='ArrowRight')rotateCurrent(1);if(e.key==='Escape')cancelSelection();});
 window.addEventListener('storage',e=>{if(e.key===(game.experiment?EXPERIMENT_KEY:NORMAL_KEY))syncSavedGame();});
 window.addEventListener('pageshow',()=>syncSavedGame());
+thumb=new ThumbControls({enabled:()=>mobile()&&!!selected&&game.status==='playing'&&(!shell||shell.playing)&&!document.querySelector('dialog[open]'),onStart:()=>{controls.cancelInputs();controls.stopFocus();board3d.setManipulating(true);},onTurn:rotateCurrent,onEnd:()=>board3d.setManipulating(false),onConfirm:confirmPlacement,onCancel:cancelSelection,onLearn:()=>{learned=true;try{localStorage.setItem(SESSION_KEY+':thumb-learned','1');}catch{}}});
 window.addEventListener('resize',resize);resize();controls.center(game.board);
-shell=new AppShell({storageKey:SESSION_KEY,game:()=>game,saves:priorSaves,renderer:'3d',onPause:()=>controls.pauseInputs(),onCancel:()=>{controls.cancelInputs();cancelSelection();},onRegular:()=>resetView(createGame(1)),onExperiment:(mode,seed)=>resetView(createExperiment(mode,seed))});update();
+shell=new AppShell({storageKey:SESSION_KEY,game:()=>game,saves:priorSaves,renderer:'3d',onPause:()=>{thumb.pause();controls.pauseInputs();},onCancel:()=>{controls.cancelInputs();cancelSelection();},onRegular:()=>resetView(createGame(1)),onExperiment:(mode,seed)=>resetView(createExperiment(mode,seed))});update();
 window.hexHaven3D={camera:()=>({distance:controls.distance,angle:controls.angle,elevation:controls.elevation,target:controls.target.toArray(),focusing:!!controls.focus,playArea:playArea(),strategic:!!controls.strategic,bounds:controls.bounds}),previewPose:()=>board3d.previewPose(),session:()=>structuredClone(shell.session),gesture:()=>controls.touch?.state,preview:()=>selected?{...selected,rotation:draftRotation}:null,stats:()=>board3d.stats(),project:(x,y,z)=>board3d.projectWorld(x,y,z),otterPose:()=>board3d.otterPose()};

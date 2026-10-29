@@ -32,6 +32,7 @@ with sync_playwright() as p:
   center=page.evaluate("""async()=>{const T=await import('./vendor/three/three.module.js');const board=window.__testBoard,v=board.otter.getWorldPosition(new T.Vector3());v.y+=.4;v.project(board.camera);return {x:(v.x+1)*innerWidth/2,y:(1-v.y)*innerHeight/2};}""")
   clip={'x':max(0,min(width-210,center['x']-105)),'y':max(0,min(height-210,center['y']-105)),'width':210,'height':210}
   page.screenshot(path=str(out/f'otter-detail-{width}.png'),clip=clip)
+  page.locator('#result-close').click()
   gestures=[]
   if width==1280:
    # Read camera matrices from the read-only diagnostic API when available.

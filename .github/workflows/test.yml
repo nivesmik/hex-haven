@@ -10,9 +10,13 @@ jobs:
           node-version: 24
       - run: npm test
       - run: for file in src/*.js src/visuals/*.js test/*.js test-support/*.js scripts/*.js; do node --check "$file"; done
-
   browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit, pan-otter]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,17 +24,17 @@ jobs:
           python-version: '3.12'
       - run: pip install -r scripts/requirements-browser.txt
       - run: python -m playwright install --with-deps chromium webkit
-      - run: python scripts/test-v08-pan-otter.py --output /tmp/v08-after --assert-fixed
+      - if: matrix.engine == 'chromium'
+        run: python scripts/test-integrated-v08.py
+      - if: matrix.engine == 'webkit'
+        run: python scripts/test-thumb-v081.py --engine webkit --output /tmp/v081-webkit
+      - if: matrix.engine == 'pan-otter'
+        run: python scripts/test-v08-pan-otter.py --output /tmp/v08-after --assert-fixed
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: v08-pan-otter-screenshots
-          path: /tmp/v08-after/
-      - run: python scripts/test-thumb-v081.py --engine webkit --output /tmp/v081-webkit
-      - run: python scripts/test-integrated-v08.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: v08-puzzle-mobile-tablet
+          name: v081-${{ matrix.engine }}-screenshots
           path: |
             /tmp/v081-thumb/
             /tmp/v081-webkit/
-            /tmp/v08-integrated/
+            /tmp/v08-after/

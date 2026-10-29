@@ -106,3 +106,6 @@ body[data-app-screen="home"] .game>.hud,body[data-app-screen="home"] .game>.dock
 @media(pointer:coarse) and (max-height:600px){#thumb-controls{left:auto;right:12px;width:330px;padding:6px 10px}#thumb-rotate{min-height:44px}.thumb-buttons{margin-top:6px}.thumb-buttons button{min-height:44px}.integrated.visual3d #selection{left:auto;right:12px;width:330px;bottom:calc(env(safe-area-inset-bottom,0px) + 134px);font-size:12px}}
 body[data-app-screen="home"] #thumb-controls{display:none}#thumb-controls:focus-within{outline-color:#65805c}
 @media(prefers-reduced-motion:reduce){#thumb-controls *{animation:none!important}}
+
+@media(pointer:coarse) and (max-height:600px){.integrated .hud{max-width:320px;right:auto}.integrated #objective{font-size:13px}#win-condition{font-size:10px}.integrated .goal-card{padding:6px 8px}.integrated.visual3d #interaction-hint{left:auto;right:16px;width:280px;bottom:24px}}
+#result-open{font-size:12px;min-height:32px;border-radius:8px;background:#f1f6e8;color:#36573f;padding:5px 10px;margin-top:5px}#result-close{margin-right:10px;background:#e4eddc;color:#36573f}

@@ -22,6 +22,11 @@ export function tileGroup(tile,kit,{ghost=false,decorations=true}={}){
  if(decorations&&!tile.special&&tile.edges.filter(t=>t==='forest'||t==='grass').length>=4&&Math.abs((tile.q??0)*7+(tile.r??0)*11)%4===0){const before=g.children.length;kit.mountain(g);for(const mesh of g.children.slice(before))mesh.userData.detail=true;}
  if(tile.special){
   const star=kit.mesh(g,kit.geometry('special',()=>new THREE.OctahedronGeometry(.14)),0xd6ac50,0,.55,0);star.rotation.z=Math.PI/4;
+  // A raised five-point star reads as a special tile without adding face rules.
+  const shape=new THREE.Shape();for(let i=0;i<10;i++){const angle=Math.PI/2+i*Math.PI/5,r=i%2?.085:.19;const x=Math.cos(angle)*r,y=Math.sin(angle)*r;if(i===0)shape.moveTo(x,y);else shape.lineTo(x,y);}shape.closePath();
+  const badge=new THREE.Mesh(kit.geometry('special-star',()=>new THREE.ShapeGeometry(shape)),kit.material(0xf0ce70));badge.rotation.x=-Math.PI/2;badge.position.y=.86;badge.name='special-badge';g.add(badge);
+  for(let i=0;i<6;i++){const p=edgePoint(i,.94,Math.PI/6);kit.mesh(g,kit.geometry('special-corner',()=>new THREE.SphereGeometry(.033,5,4)),0xd6ac50,p.x,TILE_TOP+.026,p.z);}
+
  }
  if(ghost){const materials=new Map();g.traverse(o=>{if(!o.material)return;const original=o.material;if(!materials.has(original)){const m=original.clone();m.transparent=true;m.opacity=.8;m.depthWrite=true;materials.set(original,m);}o.material=materials.get(original);o.renderOrder=3;});}
  return g;

@@ -1,6 +1,6 @@
 import {PreviewMotion} from './preview-motion.js';
 import * as THREE from '../vendor/three/three.module.js';
-import {available,key,ecosystemProgress} from './engine.js';
+import {available,key,ecosystemProgress,neighbors} from './engine.js';
 import {placementPreview} from './placement-preview.js';
 import {axialToWorld,edgeVertices,edgePoint,TILE_TOP} from './visuals/hex-layout.js';
 import {NatureKit} from './visuals/nature.js';
@@ -15,7 +15,7 @@ export class Board3D{
   this.scene=new THREE.Scene();this.scene.background=new THREE.Color(0xe5ebe1);
   this.camera=new THREE.PerspectiveCamera(38,1,.1,180);
   this.kit=new NatureKit();this.tiles=new Map();this.spots=new Map();this.preview=null;this.highlight=new THREE.Group();this.ecology=new THREE.Group();this.scene.add(this.highlight,this.ecology);
-  this.frontierMaterial=new THREE.LineBasicMaterial({color:0x8ba991,transparent:true,opacity:.22});this.terrainOutlineMaterial=new THREE.LineBasicMaterial({color:0x718970,transparent:true,opacity:0});
+  this.frontierMaterial=new THREE.LineBasicMaterial({color:0x8ba991,transparent:true,opacity:.22});this.terrainOutlineMaterial=new THREE.LineBasicMaterial({color:0x718970,transparent:true,opacity:.22});
   this.scene.add(new THREE.HemisphereLight(0xf1f4e9,0xa0ac8c,2.4));
   const sun=new THREE.DirectionalLight(0xffebce,2.2);sun.position.set(-4,9,6);this.scene.add(sun);
   this.ground=this.kit.mesh(this.scene,this.kit.geometry('ground',()=>new THREE.PlaneGeometry(180,180)),0xdce3d5,0,-.4,0);this.ground.rotation.x=-Math.PI/2;
@@ -35,7 +35,13 @@ export class Board3D{
  setGame(game,cell){
   for(const [id,entry] of this.tiles)if(game.board.get(id)!==entry.tile){this.scene.remove(entry.group);this.tiles.delete(id);}
   for(const [id,tile] of game.board)if(!this.tiles.has(id)){
-   const group=tileGroup(tile,this.kit);group.add(new THREE.LineLoop(this.kit.geometry('terrain-outline',()=>new THREE.BufferGeometry().setFromPoints(Array.from({length:6},(_,i)=>{const p=edgePoint(i,1,Math.PI/6);return new THREE.Vector3(p.x,TILE_TOP+.007,p.z);}))),this.terrainOutlineMaterial));const p=axialToWorld(tile.q,tile.r);group.position.set(p.x,0,p.z);this.scene.add(group);this.tiles.set(id,{tile,group});
+   const group=tileGroup(tile,this.kit);const outline=new THREE.LineSegments(new THREE.BufferGeometry(),this.terrainOutlineMaterial);outline.name='tile-boundary';group.add(outline);const p=axialToWorld(tile.q,tile.r);group.position.set(p.x,0,p.z);this.scene.add(group);this.tiles.set(id,{tile,group});
+  }
+  // Each shared edge belongs to exactly one tile; cached masks avoid doubled lines.
+  for(const [id,{group,tile}] of this.tiles){
+   const mask=neighbors(tile.q,tile.r).reduce((m,n)=>{const other=key(n.q,n.r);return m|((!game.board.has(other)||id<other)?1<<n.dir:0);},0);
+   const outline=group.getObjectByName('tile-boundary');
+   if(outline.userData.mask!==mask){if(outline.userData.mask===undefined)outline.geometry.dispose();outline.geometry=this.kit.geometry('boundary-'+mask,()=>new THREE.BufferGeometry().setFromPoints(Array.from({length:6},(_,i)=>i).filter(i=>mask&(1<<i)).flatMap(i=>edgeVertices(i).map(p=>new THREE.Vector3(p.x,TILE_TOP+.009,p.z)))));outline.userData.mask=mask;}
   }
   const frontier=game.status==='playing'?new Map(available(game.board).map(p=>[key(p.q,p.r),p])):new Map();
   for(const [id,group] of this.spots)if(!frontier.has(id)){this.scene.remove(group);this.spots.delete(id);}
@@ -53,8 +59,8 @@ export class Board3D{
    const outline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(Array.from({length:6},(_,i)=>{const a=edgePoint(i,1,Math.PI/6);return new THREE.Vector3(p.x+a.x,TILE_TOP+.018,p.z+a.z);})),new THREE.LineBasicMaterial({color:0xc5b374,transparent:true,opacity:.85}));this.highlight.add(outline);
    for(const connection of forecast.connections){
     const [a,b]=edgeVertices(connection.dir),geometry=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(p.x+a.x,TILE_TOP+.025,p.z+a.z),new THREE.Vector3(p.x+b.x,TILE_TOP+.025,p.z+b.z)]);
-    const material=new THREE.LineBasicMaterial({color:COLORS[connection.terrain],transparent:true,opacity:connection.matches?1:.35});
-    this.highlight.add(new THREE.Line(geometry,material));
+    const material=connection.matches?new THREE.LineBasicMaterial({color:0xf0c767}):new THREE.LineDashedMaterial({color:0x765c4a,dashSize:.1,gapSize:.07,transparent:true,opacity:.8});
+    const line=new THREE.Line(geometry,material);if(!connection.matches)line.computeLineDistances();this.highlight.add(line);
     if(connection.matches){
      const m=edgePoint(connection.dir,.86),dot=new THREE.Mesh(this.kit.geometry('match',()=>new THREE.SphereGeometry(.065,6,4)),new THREE.MeshBasicMaterial({color:0xffdc88}));
      // Unique marker geometry lets all preview resources have one cleanup path.
@@ -81,7 +87,7 @@ export class Board3D{
  }
  setManipulating(held){if(!this.preview&&!held){this.previewMotion.reset();return;}this.previewMotion.setHeld(held,performance.now());this.invalidate();}
  turnPreview(direction){this.previewMotion.turn(direction,performance.now());}
- setStrategic(enabled){if(this.strategic===enabled)return;this.strategic=enabled;this.terrainOutlineMaterial.opacity=enabled?.3:0;for(const group of this.spots.values()){const line=group.getObjectByName('frontier-outline');if(line)line.material.opacity=enabled?.65:.22;}for(const {group} of this.tiles.values())for(const mesh of group.children)if(mesh.userData.detail)mesh.visible=!enabled;this.invalidate();}
+ setStrategic(enabled){if(this.strategic===enabled)return;this.strategic=enabled;this.terrainOutlineMaterial.opacity=enabled?.4:.22;for(const group of this.spots.values()){const line=group.getObjectByName('frontier-outline');if(line)line.material.opacity=enabled?.65:.22;}for(const {group} of this.tiles.values())for(const mesh of group.children)if(mesh.userData.detail)mesh.visible=!enabled;this.invalidate();}
  previewPose(){return this.previewMotion.sample(performance.now(),this.motion.matches);}
  invalidate(){
   if(this.lost||document.hidden)return;

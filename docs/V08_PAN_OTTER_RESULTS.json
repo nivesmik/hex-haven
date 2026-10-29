@@ -1,0 +1,292 @@
+{
+  "before": [
+    {
+      "viewport": "1280x800",
+      "pageErrors": [],
+      "pan": [
+        {
+          "orbitDrag": 0,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            47.261,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -47.261,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            1.233,
+            33.514
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            -1.233,
+            -33.514
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            46.476,
+            -0.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -46.476,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            0.319,
+            32.397
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            -0.319,
+            -32.397
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            49.396,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -49.396,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            0.496,
+            36.649
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            -0.496,
+            -36.649
+          ]
+        }
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "pageErrors": [],
+      "pan": []
+    }
+  ],
+  "after": [
+    {
+      "viewport": "1280x800",
+      "pageErrors": [],
+      "pan": [
+        {
+          "orbitDrag": 0,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            50.0,
+            -0.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -50.0,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            -0.0,
+            -45.0
+          ]
+        },
+        {
+          "orbitDrag": 0,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            0.0,
+            45.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            50.0,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -50.0,
+            -0.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            0.0,
+            -45.0
+          ]
+        },
+        {
+          "orbitDrag": 110,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            -0.0,
+            45.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            50,
+            0
+          ],
+          "screenDelta": [
+            50.0,
+            0.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            -50,
+            0
+          ],
+          "screenDelta": [
+            -50.0,
+            -0.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            0,
+            -45
+          ],
+          "screenDelta": [
+            -0.0,
+            -45.0
+          ]
+        },
+        {
+          "orbitDrag": -210,
+          "drag": [
+            0,
+            45
+          ],
+          "screenDelta": [
+            0.0,
+            45.0
+          ]
+        }
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "pageErrors": [],
+      "pan": []
+    }
+  ]
+}

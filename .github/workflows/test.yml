@@ -9,4 +9,32 @@ jobs:
         with:
           node-version: 24
       - run: npm test
-      - run: for file in src/*.js test/*.js test-support/*.js scripts/*.js; do node --check "$file"; done
+      - run: for file in src/*.js src/visuals/*.js test/*.js test-support/*.js scripts/*.js; do node --check "$file"; done
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit, pan-otter]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r scripts/requirements-browser.txt
+      - run: python -m playwright install --with-deps chromium webkit
+      - if: matrix.engine == 'chromium'
+        run: python scripts/test-integrated-v08.py
+      - if: matrix.engine == 'webkit'
+        run: python scripts/test-thumb-v081.py --engine webkit --output /tmp/v081-webkit
+      - if: matrix.engine == 'pan-otter'
+        run: python scripts/test-v08-pan-otter.py --output /tmp/v08-after --assert-fixed
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v081-${{ matrix.engine }}-screenshots
+          path: |
+            /tmp/v081-thumb/
+            /tmp/v081-webkit/
+            /tmp/v08-after/
